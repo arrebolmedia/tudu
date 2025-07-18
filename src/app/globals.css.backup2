@@ -1,0 +1,331 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@100;200;300;400;500;600;700;800;900&family=SF+Pro+Text:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+:root {
+  /* Apple Design System Colors */
+  --background: #ffffff;
+  --foreground: #1d1d1f;
+  --muted: #f5f5f7;
+  --muted-foreground: #86868b;
+  --accent: #007aff;
+  --accent-hover: #0056d6;
+  --border: #d2d2d7;
+  --input: #ffffff;
+  --primary: #007aff;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f7;
+  --secondary-foreground: #1d1d1f;
+  --destructive: #ff3b30;
+  --destructive-foreground: #ffffff;
+  --ring: #007aff;
+  --radius: 12px;
+  
+  /* Apple Shadows */
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #000000;
+    --foreground: #f5f5f7;
+    --muted: #1c1c1e;
+    --muted-foreground: #8e8e93;
+    --accent: #0a84ff;
+    --accent-hover: #409cff;
+    --border: #38383a;
+    --input: #1c1c1e;
+    --primary: #0a84ff;
+    --primary-foreground: #ffffff;
+    --secondary: #1c1c1e;
+    --secondary-foreground: #f5f5f7;
+    --destructive: #ff453a;
+    --destructive-foreground: #ffffff;
+    --ring: #0a84ff;
+  }
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* Apple-style glass morphism */
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-dark {
+  background: rgba(28, 28, 30, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Smooth transitions like Apple */
+.apple-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Apple button styles */
+.apple-button {
+  border-radius: 8px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.apple-button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.apple-button:active {
+  transform: translateY(0);
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Apple card styles */
+.apple-card {
+  background: var(--background);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.apple-card:hover {
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-0.5px);
+  border-color: rgba(0, 122, 255, 0.1);
+}
+
+/* Apple sidebar */
+.apple-sidebar {
+  background: rgba(242, 242, 247, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .apple-sidebar {
+    background: rgba(28, 28, 30, 0.8);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Apple list item */
+.apple-list-item {
+  border-radius: 10px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.apple-list-item:hover {
+  background: rgba(0, 122, 255, 0.1);
+  transform: scale(1.02);
+}
+
+.apple-list-item.active {
+  background: rgba(0, 122, 255, 0.15);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* Apple input styles */
+.apple-input {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.apple-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+@media (prefers-color-scheme: dark) {
+  .apple-input {
+    background: rgba(28, 28, 30, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--foreground);
+  }
+  
+  .apple-input:focus {
+    background: rgba(28, 28, 30, 0.95);
+  }
+}
+
+/* Apple task item */
+.apple-task {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.apple-task:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 122, 255, 0.2);
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+
+.apple-task.completed {
+  background: rgba(0, 0, 0, 0.02);
+  opacity: 0.6;
+}
+
+@media (prefers-color-scheme: dark) {
+  .apple-task {
+    background: rgba(28, 28, 30, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .apple-task:hover {
+    background: rgba(28, 28, 30, 0.9);
+    border-color: rgba(10, 132, 255, 0.3);
+  }
+  
+  .apple-task.completed {
+    background: rgba(255, 255, 255, 0.02);
+  }
+}
+
+/* Apple modal */
+.apple-modal {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  box-shadow: var(--shadow-xl);
+}
+
+@media (prefers-color-scheme: dark) {
+  .apple-modal {
+    background: rgba(28, 28, 30, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Apple scrollbar */
+.apple-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.apple-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.apple-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.apple-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+  background-clip: content-box;
+}
+
+@media (prefers-color-scheme: dark) {
+  .apple-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  .apple-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* Task Completion Animations */
+.task-striking-through .task-title {
+  position: relative;
+  animation: textFadeToGray 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards 0.3s;
+}
+
+.task-striking-through .task-title::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+  border-radius: 1px;
+  animation: strikethroughGrow 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  z-index: 10;
+}
+
+@keyframes strikethroughGrow {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+/* Title strikethrough animation */
+.task-striking-through .task-title {
+  animation: textFadeToGray 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards 0.3s;
+}
+
+@keyframes textFadeToGray {
+  0% {
+    color: inherit;
+  }
+  100% {
+    color: #9ca3af;
+  }
+}
+
+/* Description strikethrough animation */
+.task-striking-through .task-description {
+  animation: textFadeToGray 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards 0.5s;
+}
+
+/* Smooth task list transitions */
+.task-item:not(.task-reorganizing) {
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+              opacity 0.3s ease-in-out,
+              box-shadow 0.3s ease-in-out;
+}

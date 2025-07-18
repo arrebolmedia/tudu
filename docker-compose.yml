@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: gestor-tareas-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: gestor_tareas
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    networks:
+      - gestor-tareas-network
+
+  # Aplicación Next.js (para desarrollo)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gestor-tareas-app
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/gestor_tareas
+      NEXTAUTH_SECRET: your-secret-key-here
+      NEXTAUTH_URL: http://localhost:3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    networks:
+      - gestor-tareas-network
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+
+  # Prisma Studio (opcional, para administrar la BD)
+  prisma-studio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gestor-tareas-studio
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/gestor_tareas
+    ports:
+      - "5555:5555"
+    depends_on:
+      - postgres
+    networks:
+      - gestor-tareas-network
+    command: npx prisma studio --port 5555 --hostname 0.0.0.0
+
+volumes:
+  postgres_data:
+
+networks:
+  gestor-tareas-network:
+    driver: bridge
