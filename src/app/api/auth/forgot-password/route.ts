@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { sendEmail, generatePasswordResetEmailHTML } from '@/lib/email'
+// import { sendPasswordResetEmail, generatePasswordResetEmailHTML } from '@/lib/email'
 import crypto from 'crypto'
 
 export async function POST(request: NextRequest) {
@@ -47,26 +47,15 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Generar URL de reset
-    const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password?token=${resetToken}`
+    // Generar URL de reset (temporalmente no se usa)
+    // const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password?token=${resetToken}`
 
-    // Enviar email
-    const emailResult = await sendEmail({
-      to: email,
-      subject: 'Restablece tu contraseña - Tudú',
-      html: generatePasswordResetEmailHTML(user.name || 'Usuario', resetUrl)
-    })
-
-    if (!emailResult.success) {
-      return NextResponse.json(
-        { error: 'Error al enviar el email' },
-        { status: 500 }
-      )
-    }
+    // TEMPORALMENTE DESHABILITADO: Envío de email hasta configurar SMTP
+    // await sendPasswordResetEmail(email, user.name || 'Usuario', resetToken)
 
     return NextResponse.json({
-      message: 'Si el email existe, recibirás un enlace para restablecer tu contraseña'
-    })
+      message: 'Función de restablecimiento de contraseña temporalmente deshabilitada. Contacta al administrador.'
+    }, { status: 200 })
 
   } catch (error) {
     console.error('Error al solicitar reset de contraseña:', error)

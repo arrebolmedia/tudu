@@ -1,15 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs']
-  },
-  // Configuración crítica para deployment
-  output: 'standalone',
+  serverExternalPackages: ['@prisma/client', 'bcryptjs'],
   
-  // Optimizaciones
+  // Optimizaciones para Vercel
   poweredByHeader: false,
-  reactStrictMode: true,
-  swcMinify: true,
   
   // Variables de entorno
   env: {

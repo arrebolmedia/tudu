@@ -64,7 +64,7 @@ const smartLists = [
 interface ListItemProps {
   listId: string
   title: string
-  icon: any
+  icon: React.ElementType
   color?: string
   isActive: boolean
   count: number
