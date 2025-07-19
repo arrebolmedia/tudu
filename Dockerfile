@@ -1,5 +1,5 @@
-# Dockerfile para producción
-FROM node:18-alpine AS base
+# Dockerfile optimizado para DigitalOcean App Platform
+FROM node:20-alpine AS base
 
 # Instalar dependencias solo cuando sea necesario
 FROM base AS deps

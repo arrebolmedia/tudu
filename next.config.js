@@ -3,15 +3,15 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs']
   },
-  // Optimizar para producción
+  // Configuración crítica para deployment
+  output: 'standalone',
+  
+  // Optimizaciones
   poweredByHeader: false,
   reactStrictMode: true,
   swcMinify: true,
   
-  // Configuración para deployment
-  output: 'standalone',
-  
-  // Variables de entorno públicas
+  // Variables de entorno
   env: {
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
   }
