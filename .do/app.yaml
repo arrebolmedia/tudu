@@ -4,6 +4,17 @@ services:
   source_dir: /
   github:
     repo: arrebolmedia/tudu
+    branch: deploy-digitalocean
+  run_command: npm start
+  build_command: npm install && npx prisma generate && npm run build
+  environment_slug: node-js
+  instance_count: 1
+  instance_size_slug: basic-xxspp
+services:
+- name: web
+  source_dir: /
+  github:
+    repo: arrebolmedia/tudu
     branch: auth
   run_command: npm start
   build_command: npm run build
