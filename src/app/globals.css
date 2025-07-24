@@ -318,4 +318,59 @@
     max-width: 750px !important;
     box-sizing: border-box !important;
   }
+
+  /* Animaciones para reordenamiento de tareas */
+  @keyframes task-reorder {
+    0% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    25% {
+      transform: translateY(-10px);
+      opacity: 0.8;
+    }
+    50% {
+      transform: translateY(0);
+      opacity: 0.9;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes task-slide-down {
+    0% {
+      transform: translateY(-20px);
+      opacity: 0.7;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .task-reorder-animation {
+    /* Limpiado - animaciones removidas */
+  }
+
+  .task-slide-down-animation {
+    /* Limpiado - animaciones removidas */
+  }
+
+  .task-completion-bounce {
+    /* Limpiado - animaciones removidas */
+  }
+
+  /* Transición suave básica */
+  .task-smooth-reorder {
+    transition: all 0.3s ease;
+  }
+
+  /* Fade out ligero - medio segundo */
+  .task-fade-out {
+    opacity: 0;
+    transition: opacity 0.5s ease-out;
+  }
+
 }

@@ -388,6 +388,8 @@ export default function HomePage() {
 	}
 	const [editingTask, setEditingTask] = useState<Task | null>(null)
 	const [searchQuery, setSearchQuery] = useState('')
+	const [fadingOutTasks, setFadingOutTasks] = useState<Set<string>>(new Set())
+	const [waitingToFadeTasks, setWaitingToFadeTasks] = useState<Set<string>>(new Set())
 	const [isCreateListModalOpen, setIsCreateListModalOpen] = useState(false)
 	const [isHydrated, setIsHydrated] = useState(false)
 	const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false)
@@ -475,6 +477,11 @@ export default function HomePage() {
 
 	// Filtrar tareas basado en la lista activa y filtros
 	const filteredTasks = tasks.filter((task) => {
+		// Si la tarea está en fade out o esperando fade out, siempre mostrarla
+		if (fadingOutTasks.has(task.id) || waitingToFadeTasks.has(task.id)) {
+			return true
+		}
+
 		// Filtro por lista
 		if (activeListId && !['today', 'important', 'completed', 'archived'].includes(activeListId)) {
 			if (task.listId !== activeListId) return false
@@ -522,13 +529,13 @@ export default function HomePage() {
 		return true
 	})
 	
-	// Ordenar tareas: completadas al final, luego por posición
+	// Ordenar tareas: completadas al final
 	.sort((a, b) => {
-		// Primero por estado de completado
+		// Ordenamiento normal
 		if (a.completed !== b.completed) {
 			return a.completed ? 1 : -1
 		}
-		// Luego por posición
+		
 		return (a.position || 0) - (b.position || 0)
 	})
 
@@ -578,17 +585,60 @@ export default function HomePage() {
 	}
 
 	const handleToggleComplete = (taskId: string, completed: boolean) => {
-		// Simplemente actualizar el estado de la tarea
-		setTasks((prev) =>
-			prev.map((task) =>
-				task.id === taskId ? { 
-					...task, 
-					completed, 
-					status: (completed ? 'COMPLETED' : 'PENDING') as TaskStatus,
-					updatedAt: new Date() 
-				} : task
+		if (completed) {
+			// Marcar que esta tarea está esperando el fade out
+			setWaitingToFadeTasks(prev => new Set(prev).add(taskId))
+			
+			// Actualizar el estado de la tarea inmediatamente
+			setTasks((prev) =>
+				prev.map((task) =>
+					task.id === taskId ? { 
+						...task, 
+						completed, 
+						status: 'COMPLETED' as TaskStatus,
+						updatedAt: new Date() 
+					} : task
+				)
 			)
-		)
+			
+			// Esperar 1 segundo antes de iniciar el fade out
+			setTimeout(() => {
+				// Remover de waiting y agregar a fade out
+				setWaitingToFadeTasks(prev => {
+					const newSet = new Set(prev)
+					newSet.delete(taskId)
+					return newSet
+				})
+				setFadingOutTasks(prev => new Set(prev).add(taskId))
+				
+				// Remover del fade out después de medio segundo adicional
+				setTimeout(() => {
+					setFadingOutTasks(prev => {
+						const newSet = new Set(prev)
+						newSet.delete(taskId)
+						return newSet
+					})
+				}, 500)
+			}, 1000) // Delay de 1 segundo antes de iniciar fade out
+		} else {
+			// Si se desmarca, remover del fade out y actualizar
+			setFadingOutTasks(prev => {
+				const newSet = new Set(prev)
+				newSet.delete(taskId)
+				return newSet
+			})
+			
+			setTasks((prev) =>
+				prev.map((task) =>
+					task.id === taskId ? { 
+						...task, 
+						completed, 
+						status: 'PENDING' as TaskStatus,
+						updatedAt: new Date() 
+					} : task
+				)
+			)
+		}
 	}
 
 	const handleUpdateStatus = (taskId: string, status: TaskStatus) => {
@@ -949,30 +999,32 @@ export default function HomePage() {
 								)}
 								
 								<div className="space-y-8">
-									{filteredTasks.map((task, index) => (
-										<div
-											key={`${task.id}-${task.position}-${task.updatedAt?.getTime()}`}
-											className="apple-fade-in"
-											style={{ 
-												animationDelay: `${index * 50}ms`,
-												transition: 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
-											}}
-										>
-											<TaskItem
-												task={task}
-												onToggleComplete={handleToggleComplete}
-												onUpdateStatus={handleUpdateStatus}
-												onUpdateTask={handleUpdateTask}
-												onDelete={handleDeleteTask}
-												onArchive={handleArchiveTask}
-												onRestore={handleRestoreTask}
-												onCancelDeletion={handleCancelDeletion}
-												onMoveToList={handleMoveTaskToList}
-												onEdit={handleEditTask}
-												lists={lists}
-											/>
-										</div>
-									))}
+									{filteredTasks.map((task, index) => {
+										const isFadingOut = fadingOutTasks.has(task.id)
+										return (
+											<div
+												key={`${task.id}-${task.position}-${task.updatedAt?.getTime()}`}
+												className={`apple-fade-in ${isFadingOut ? 'task-fade-out' : ''}`}
+												style={{ 
+													animationDelay: `${index * 75}ms`
+												}}
+											>
+												<TaskItem
+													task={task}
+													onToggleComplete={handleToggleComplete}
+													onUpdateStatus={handleUpdateStatus}
+													onUpdateTask={handleUpdateTask}
+													onDelete={handleDeleteTask}
+													onArchive={handleArchiveTask}
+													onRestore={handleRestoreTask}
+													onCancelDeletion={handleCancelDeletion}
+													onMoveToList={handleMoveTaskToList}
+													onEdit={handleEditTask}
+													lists={lists}
+												/>
+											</div>
+										)
+									})}
 								</div>
 							</div>
 						)}
