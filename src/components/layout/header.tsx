@@ -2,12 +2,18 @@
 
 import { CheckSquare, Sparkles, User, LogOut, Settings } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 
 export function Header() {
   const { data: session, status } = useSession()
+  const router = useRouter()
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/auth/signin' })
+  }
+
+  const handleProfileClick = () => {
+    router.push('/profile')
   }
 
   console.log('Header render - Status:', status, 'Session:', !!session)
@@ -38,10 +44,6 @@ export function Header() {
             </div>
 
             <div className="flex items-center space-x-4">
-              <div className="text-xs bg-yellow-100 px-2 py-1 rounded">
-                Debug: {status}
-              </div>
-
               {session ? (
                 <div className="relative group">
                   <button className="flex items-center space-x-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-full hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg">
@@ -57,7 +59,10 @@ export function Header() {
                         <p className="text-sm font-semibold text-gray-900">Mi cuenta</p>
                         <p className="text-xs text-gray-500">{session.user?.email}</p>
                       </div>
-                      <button className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 flex items-center">
+                      <button 
+                        onClick={handleProfileClick}
+                        className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 flex items-center"
+                      >
                         <User className="mr-3 h-4 w-4 text-blue-500" />
                         Perfil
                       </button>

@@ -322,7 +322,7 @@ export function TaskItem({
         data-completed={task.completed}
         data-archived={task.archived}
         className={cn(
-          "group relative bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 transition-all duration-300 hover:shadow-lg hover:shadow-black/5 hover:border-gray-300 dark:hover:border-gray-600 task-item",
+          "group relative bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 transition-all duration-700 hover:shadow-lg hover:shadow-black/5 hover:border-gray-300 dark:hover:border-gray-600 task-item",
           task.completed ? "opacity-75 bg-gray-50 dark:bg-gray-800/50" : "hover:bg-gray-50/50 dark:hover:bg-gray-800/30",
           task.archived && "opacity-60 bg-gray-100 dark:bg-gray-800/70 border-gray-300 dark:border-gray-600"
         )}
@@ -332,14 +332,14 @@ export function TaskItem({
         <button
           onClick={() => onToggleComplete(task.id, !task.completed)}
           className={cn(
-            "mt-0.5 w-5 h-5 transition-all duration-200 group/checkbox relative transform active:scale-95",
-            task.completed ? "hover:scale-102" : "hover:scale-105"
+            "mt-0.5 w-5 h-5 transition-all duration-500 group/checkbox relative transform active:scale-95",
+            task.completed ? "hover:scale-102 animate-pulse" : "hover:scale-105"
           )}
         >
           {task.completed ? (
             <CheckSquare 
-              className="w-5 h-5" 
-              style={{ color: '#10b981' }}
+              className="w-5 h-5 animate-bounce" 
+              style={{ color: '#10b981', animationDuration: '1s', animationIterationCount: '2' }}
             />
           ) : (
             <>
@@ -405,7 +405,7 @@ export function TaskItem({
               ) : (
                 <h3 
                   className={cn(
-                    "task-title text-lg font-semibold cursor-pointer transition-all duration-300",
+                    "task-title text-lg font-semibold cursor-pointer transition-all duration-700",
                     task.completed
                       ? "line-through text-gray-500 dark:text-gray-600 hover:text-gray-400" 
                       : "text-gray-900 dark:text-white hover:text-blue-500"
