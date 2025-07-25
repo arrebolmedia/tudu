@@ -79,6 +79,7 @@ interface TaskItemProps {
   onMoveToList?: (taskId: string, listId: string) => void
   onEdit?: (task: Task) => void
   lists?: List[]
+  variant?: 'default' | 'compact'
 }
 
 export function TaskItem({ 
@@ -92,7 +93,8 @@ export function TaskItem({
   onCancelDeletion,
   onMoveToList,
   onEdit,
-  lists = []
+  lists = [],
+  variant = 'default'
 }: TaskItemProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [showDatePicker, setShowDatePicker] = useState(false)

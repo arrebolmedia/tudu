@@ -20,13 +20,20 @@ import {
   Gamepad2,
   Palette,
   Target,
-  Archive
+  Archive,
+  Grid3X3,
+  Rows3,
+  Columns3,
+  ArrowUpDown
 } from 'lucide-react'
 
 import { Task, List, CreateTaskData, TaskStatus, Priority } from '@/types'
 import { Header } from '@/components/layout/header'
 import { Sidebar } from '@/components/layout/sidebar'
 import { TaskItem } from '@/components/tasks/task-item'
+import { TaskCardsView } from '@/components/views/task-cards-view'
+import { TaskListView } from '@/components/views/task-list-view'
+import { TaskKanbanView } from '@/components/views/task-kanban-view'
 // import { TaskForm } from '@/components/tasks/task-form'
 import { QuickTaskFab } from '@/components/ui/quick-task-fab'
 import { CreateListModal } from '@/components/lists/create-list-modal'
@@ -322,8 +329,8 @@ function loadFromStorage<T>(key: string, defaultValue: T): T {
 					...item,
 					createdAt: new Date(item.createdAt as string),
 					updatedAt: new Date(item.updatedAt as string),
-					...(item.dueDate && { dueDate: new Date(item.dueDate as string) }),
-					...(item.reminderAt && { reminderAt: new Date(item.reminderAt as string) })
+					...(item.dueDate ? { dueDate: new Date(item.dueDate as string) } : {}),
+					...(item.reminderAt ? { reminderAt: new Date(item.reminderAt as string) } : {})
 				})) as T
 			}
 			return parsed
@@ -349,7 +356,7 @@ export default function HomePage() {
 	// Estados inicializados con valores por defecto (mismo en servidor y cliente)
 	const [lists, setLists] = useState<List[]>(mockLists)
 	const [tasks, setTasks] = useState<Task[]>(mockTasks)
-	const [activeListId, setActiveListId] = useState<string | undefined>('all')
+	const [activeListId, setActiveListId] = useState<string | undefined>('todas')
 	const [isTaskFormOpen, setIsTaskFormOpen] = useState(false)
 	const [openedFromButton, setOpenedFromButton] = useState(false)
 
@@ -388,12 +395,32 @@ export default function HomePage() {
 	}
 	const [editingTask, setEditingTask] = useState<Task | null>(null)
 	const [searchQuery, setSearchQuery] = useState('')
-	const [fadingOutTasks, setFadingOutTasks] = useState<Set<string>>(new Set())
-	const [waitingToFadeTasks, setWaitingToFadeTasks] = useState<Set<string>>(new Set())
+	const [viewMode, setViewMode] = useState<'cards' | 'list' | 'kanban'>(() => {
+		if (typeof window !== 'undefined') {
+			const saved = localStorage.getItem('viewMode')
+			return (saved as 'cards' | 'list' | 'kanban') || 'cards'
+		}
+		return 'cards'
+	})
+	const [sortBy, setSortBy] = useState<'title' | 'priority' | 'dueDate' | 'status' | 'position'>('position')
+	const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 	const [isCreateListModalOpen, setIsCreateListModalOpen] = useState(false)
 	const [isHydrated, setIsHydrated] = useState(false)
+	const [completedToast, setCompletedToast] = useState<{ show: boolean; taskTitle: string; taskId: string }>({
+		show: false,
+		taskTitle: '',
+		taskId: ''
+	})
 	const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false)
 	// const [filters, setFilters] = useState<TaskFilters>({}) // Removed unused filters
+
+	// Función para cambiar vista y persistir en localStorage
+	const changeViewMode = (newViewMode: 'cards' | 'list' | 'kanban') => {
+		setViewMode(newViewMode)
+		if (typeof window !== 'undefined') {
+			localStorage.setItem('viewMode', newViewMode)
+		}
+	}
 
 	// Cargar datos de localStorage después de la hidratación
 	useEffect(() => {
@@ -477,17 +504,17 @@ export default function HomePage() {
 
 	// Filtrar tareas basado en la lista activa y filtros
 	const filteredTasks = tasks.filter((task) => {
-		// Si la tarea está en fade out o esperando fade out, siempre mostrarla
-		if (fadingOutTasks.has(task.id) || waitingToFadeTasks.has(task.id)) {
-			return true
-		}
-
 		// Filtro por lista
-		if (activeListId && !['today', 'important', 'completed', 'archived'].includes(activeListId)) {
+		if (activeListId && !['todas', 'today', 'important', 'completed', 'archived'].includes(activeListId)) {
 			if (task.listId !== activeListId) return false
 		}
 
 		// Filtros especiales
+		if (activeListId === 'todas') {
+			// Mostrar todas las tareas no archivadas
+			if (task.archived) return false
+		}
+
 		if (activeListId === 'today') {
 			if (!task.dueDate || task.archived) return false
 			const today = new Date()
@@ -529,18 +556,60 @@ export default function HomePage() {
 		return true
 	})
 	
-	// Ordenar tareas: completadas al final
-	.sort((a, b) => {
-		// Ordenamiento normal
-		if (a.completed !== b.completed) {
-			return a.completed ? 1 : -1
+	// Función de sorting personalizado
+	const getSortedTasks = (tasks: Task[]) => {
+		return [...tasks].sort((a, b) => {
+			// Las completadas siempre van al final, excepto en vista de completadas
+			if (activeListId !== 'completed' && a.completed !== b.completed) {
+				return a.completed ? 1 : -1
+			}
+
+			// Sorting según el criterio seleccionado
+			let comparison = 0
+			
+			switch (sortBy) {
+				case 'title':
+					comparison = a.title.localeCompare(b.title)
+					break
+				case 'priority':
+					const priorityOrder = { HIGH: 3, NORMAL: 2, LOW: 1 }
+					comparison = (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0)
+					break
+				case 'dueDate':
+					const dateA = a.dueDate ? new Date(a.dueDate).getTime() : Infinity
+					const dateB = b.dueDate ? new Date(b.dueDate).getTime() : Infinity
+					comparison = dateA - dateB
+					break
+				case 'status':
+					const statusOrder = { PENDING: 1, IN_PROGRESS: 2, COMPLETED: 3 }
+					comparison = (statusOrder[a.status] || 0) - (statusOrder[b.status] || 0)
+					break
+				case 'position':
+				default:
+					comparison = (a.position || 0) - (b.position || 0)
+					break
+			}
+
+			return sortOrder === 'asc' ? comparison : -comparison
+		})
+	}
+
+	// Aplicar sorting a las tareas filtradas
+	const sortedTasks = getSortedTasks(filteredTasks)
+
+	// Función para manejar el sorting
+	const handleSort = (field: string) => {
+		if (sortBy === field) {
+			setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+		} else {
+			setSortBy(field as any)
+			setSortOrder('asc')
 		}
-		
-		return (a.position || 0) - (b.position || 0)
-	})
+	}
 
 	// Calcular conteos para la sidebar
 	const taskCounts = {
+		todas: tasks.filter((t) => !t.archived).length,
 		today: tasks.filter((t) => {
 			if (!t.dueDate || t.archived) return false
 			const today = new Date()
@@ -586,8 +655,8 @@ export default function HomePage() {
 
 	const handleToggleComplete = (taskId: string, completed: boolean) => {
 		if (completed) {
-			// Marcar que esta tarea está esperando el fade out
-			setWaitingToFadeTasks(prev => new Set(prev).add(taskId))
+			// Encontrar el título de la tarea para mostrarlo en el toast
+			const task = tasks.find(t => t.id === taskId)
 			
 			// Actualizar el estado de la tarea inmediatamente
 			setTasks((prev) =>
@@ -601,33 +670,21 @@ export default function HomePage() {
 				)
 			)
 			
-			// Esperar 1 segundo antes de iniciar el fade out
-			setTimeout(() => {
-				// Remover de waiting y agregar a fade out
-				setWaitingToFadeTasks(prev => {
-					const newSet = new Set(prev)
-					newSet.delete(taskId)
-					return newSet
+			// Mostrar el toast de completado
+			if (task) {
+				setCompletedToast({
+					show: true,
+					taskTitle: task.title,
+					taskId
 				})
-				setFadingOutTasks(prev => new Set(prev).add(taskId))
 				
-				// Remover del fade out después de medio segundo adicional
+				// Ocultar el toast después de 5 segundos
 				setTimeout(() => {
-					setFadingOutTasks(prev => {
-						const newSet = new Set(prev)
-						newSet.delete(taskId)
-						return newSet
-					})
-				}, 500)
-			}, 1000) // Delay de 1 segundo antes de iniciar fade out
+					setCompletedToast(prev => ({ ...prev, show: false }))
+				}, 5000)
+			}
 		} else {
-			// Si se desmarca, remover del fade out y actualizar
-			setFadingOutTasks(prev => {
-				const newSet = new Set(prev)
-				newSet.delete(taskId)
-				return newSet
-			})
-			
+			// Si se desmarca, actualizar estado sin toast
 			setTasks((prev) =>
 				prev.map((task) =>
 					task.id === taskId ? { 
@@ -638,6 +695,25 @@ export default function HomePage() {
 					} : task
 				)
 			)
+		}
+	}
+
+	const handleUndoComplete = () => {
+		if (completedToast.taskId) {
+			// Desmarcar la tarea como completada
+			setTasks((prev) =>
+				prev.map((task) =>
+					task.id === completedToast.taskId ? { 
+						...task, 
+						completed: false, 
+						status: 'PENDING' as TaskStatus,
+						updatedAt: new Date() 
+					} : task
+				)
+			)
+			
+			// Ocultar el toast
+			setCompletedToast(prev => ({ ...prev, show: false }))
 		}
 	}
 
@@ -798,6 +874,7 @@ export default function HomePage() {
 	}
 
 	const getActiveListTitle = () => {
+		if (activeListId === 'todas') return undefined
 		if (activeListId === 'all') return undefined
 		if (activeListId === 'today') return 'Hoy'
 		if (activeListId === 'important') return 'Importantes'
@@ -839,6 +916,8 @@ export default function HomePage() {
 		if (!activeListId) return 'Todas las tareas'
 		
 		switch (activeListId) {
+			case 'todas':
+				return 'Todas las tareas'
 			case 'all':
 				return 'Todas las tareas'
 			case 'today':
@@ -860,6 +939,8 @@ export default function HomePage() {
 		if (!activeListId) return ListIcon
 		
 		switch (activeListId) {
+			case 'todas':
+				return ListIcon
 			case 'all':
 				return ListIcon
 			case 'today':
@@ -884,12 +965,14 @@ export default function HomePage() {
 		if (!activeListId) return '#6366f1'
 		
 		switch (activeListId) {
+			case 'todas':
+				return '#6366f1'
 			case 'all':
 				return '#6366f1'
 			case 'today':
 				return '#3b82f6'
 			case 'important':
-				return '#ef4444'
+				return '#f59e0b'
 			case 'completed':
 				return '#10b981'
 			case 'archived':
@@ -971,6 +1054,43 @@ export default function HomePage() {
 										{searchQuery && ` · Filtrado por "${searchQuery}"`}
 									</p>
 								</div>
+								
+								{/* View Mode Selector */}
+								<div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+									<button
+										onClick={() => changeViewMode('cards')}
+										className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+											viewMode === 'cards'
+												? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+												: 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+										}`}
+									>
+										<Grid3X3 size={16} />
+										Tarjetas
+									</button>
+									<button
+										onClick={() => changeViewMode('list')}
+										className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+											viewMode === 'list'
+												? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+												: 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+										}`}
+									>
+										<Rows3 size={16} />
+										Lista
+									</button>
+									<button
+										onClick={() => changeViewMode('kanban')}
+										className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+											viewMode === 'kanban'
+												? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+												: 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+										}`}
+									>
+										<Columns3 size={16} />
+										Kanban
+									</button>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -998,34 +1118,46 @@ export default function HomePage() {
 									</div>
 								)}
 								
-								<div className="space-y-8">
-									{filteredTasks.map((task, index) => {
-										const isFadingOut = fadingOutTasks.has(task.id)
-										return (
-											<div
-												key={`${task.id}-${task.position}-${task.updatedAt?.getTime()}`}
-												className={`apple-fade-in ${isFadingOut ? 'task-fade-out' : ''}`}
-												style={{ 
-													animationDelay: `${index * 75}ms`
-												}}
-											>
-												<TaskItem
-													task={task}
-													onToggleComplete={handleToggleComplete}
-													onUpdateStatus={handleUpdateStatus}
-													onUpdateTask={handleUpdateTask}
-													onDelete={handleDeleteTask}
-													onArchive={handleArchiveTask}
-													onRestore={handleRestoreTask}
-													onCancelDeletion={handleCancelDeletion}
-													onMoveToList={handleMoveTaskToList}
-													onEdit={handleEditTask}
-													lists={lists}
-												/>
-											</div>
-										)
-									})}
-								</div>
+								{/* Views Switch */}
+								{viewMode === 'cards' && (
+									<TaskCardsView
+										tasks={sortedTasks}
+										onToggleComplete={handleToggleComplete}
+										onUpdateStatus={handleUpdateStatus}
+										onUpdateTask={handleUpdateTask}
+										onDelete={handleDeleteTask}
+										onArchive={handleArchiveTask}
+										onRestore={handleRestoreTask}
+										onCancelDeletion={handleCancelDeletion}
+									/>
+								)}
+
+								{viewMode === 'list' && (
+									<TaskListView
+										tasks={sortedTasks}
+										lists={lists}
+										onToggleComplete={handleToggleComplete}
+										onUpdateStatus={handleUpdateStatus}
+										onUpdateTask={handleUpdateTask}
+										onEditTask={handleEditTask}
+										sortBy={sortBy}
+										sortOrder={sortOrder}
+										onSort={handleSort}
+									/>
+								)}
+
+								{viewMode === 'kanban' && (
+									<TaskKanbanView
+										tasks={sortedTasks}
+										onToggleComplete={handleToggleComplete}
+										onUpdateStatus={handleUpdateStatus}
+										onUpdateTask={handleUpdateTask}
+										onDelete={handleDeleteTask}
+										onArchive={handleArchiveTask}
+										onRestore={handleRestoreTask}
+										onCancelDeletion={handleCancelDeletion}
+									/>
+								)}
 							</div>
 						)}
 					</div>
@@ -1093,6 +1225,22 @@ export default function HomePage() {
 				}
 				isArchivedView={activeListId === 'archived'}
 			/>
+
+			{/* Toast de Tarea Completada */}
+			{completedToast.show && (
+				<div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+					<div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg shadow-lg backdrop-blur-sm border border-blue-400/20 flex items-center gap-3 animate-slide-in-bottom">
+						<CheckSquare className="w-5 h-5" />
+						<span className="font-medium">¡Tarea completada!</span>
+						<button
+							onClick={handleUndoComplete}
+							className="text-blue-100 hover:text-white underline font-medium ml-2 transition-colors"
+						>
+							deshacer
+						</button>
+					</div>
+				</div>
+			)}
 		</div>
 	)
 }

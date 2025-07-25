@@ -62,6 +62,12 @@ const iconMap = {
 
 const smartLists = [
   {
+    id: 'todas',
+    title: 'Todas',
+    icon: List,
+    color: '#6366f1'
+  },
+  {
     id: 'today',
     title: 'Hoy',
     icon: Calendar,
