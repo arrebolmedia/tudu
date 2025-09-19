@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 // Drag & drop imports removed - will be re-implemented from scratch
 import { 
   CheckSquare, 
@@ -24,7 +25,8 @@ import {
   Grid3X3,
   Rows3,
   Columns3,
-  ArrowUpDown
+  ArrowUpDown,
+  Table
 } from 'lucide-react'
 
 import { Task, List, CreateTaskData, TaskStatus, Priority } from '@/types'
@@ -33,9 +35,10 @@ import { Sidebar } from '@/components/layout/sidebar'
 import { TaskItem } from '@/components/tasks/task-item'
 import { TaskCardsView } from '@/components/views/task-cards-view'
 import { TaskListView } from '@/components/views/task-list-view'
-import { TaskKanbanView } from '@/components/views/task-kanban-view'
-// import { TaskForm } from '@/components/tasks/task-form'
-import { QuickTaskFab } from '@/components/ui/quick-task-fab'
+import { TaskListViewCrm } from '@/components/views/task-list-view-crm'
+// import { TaskKanbanView } from '@/components/views/task-kanban-view'
+import { TaskForm } from '@/components/tasks/task-form-modern'
+import { QuickTaskFab } from '@/components/ui/quick-task-fab-fixed'
 import { CreateListModal } from '@/components/lists/create-list-modal'
 import { EmptyListButton } from '@/components/ui/empty-list-button'
 import { ArchiveCompletedModal, ArchiveOption } from '@/components/ui/archive-completed-modal'
@@ -46,7 +49,7 @@ const mockLists: List[] = [
 		id: '1',
 		title: 'Personal',
 		description: 'Tareas personales y del hogar',
-		color: '#3b82f6',
+		color: '#e3cfaa',
 		icon: 'home',
 		position: 0,
 		isDefault: true,
@@ -58,7 +61,7 @@ const mockLists: List[] = [
 		id: '2',
 		title: 'Trabajo',
 		description: 'Tareas del trabajo y proyectos',
-		color: '#ef4444',
+		color: '#a8472f',
 		icon: 'briefcase',
 		position: 1,
 		isDefault: false,
@@ -70,7 +73,7 @@ const mockLists: List[] = [
 		id: '3',
 		title: 'Salud & Fitness',
 		description: 'Ejercicio, citas médicas y bienestar',
-		color: '#10b981',
+		color: '#c85a3a',
 		icon: 'heart',
 		position: 2,
 		isDefault: false,
@@ -82,7 +85,7 @@ const mockLists: List[] = [
 		id: '4',
 		title: 'Aprendizaje',
 		description: 'Libros, cursos y desarrollo personal',
-		color: '#8b5cf6',
+		color: '#d87254',
 		icon: 'book',
 		position: 3,
 		isDefault: false,
@@ -94,7 +97,7 @@ const mockLists: List[] = [
 		id: 'quick-tasks',
 		title: 'Tareas Rápidas',
 		description: 'Lista por defecto para tareas creadas rápidamente',
-		color: '#6366f1',
+		color: '#d87254',
 		icon: 'list',
 		position: 999, // Siempre al final
 		isDefault: true,
@@ -353,6 +356,13 @@ function saveToStorage<T>(key: string, value: T): void {
 }
 
 export default function HomePage() {
+	const router = useRouter()
+
+	// Redirección temporal al CRM mientras planning está en desarrollo
+	useEffect(() => {
+		router.push('/crm')
+	}, [router])
+
 	// Estados inicializados con valores por defecto (mismo en servidor y cliente)
 	const [lists, setLists] = useState<List[]>(mockLists)
 	const [tasks, setTasks] = useState<Task[]>(mockTasks)
@@ -395,10 +405,10 @@ export default function HomePage() {
 	}
 	const [editingTask, setEditingTask] = useState<Task | null>(null)
 	const [searchQuery, setSearchQuery] = useState('')
-	const [viewMode, setViewMode] = useState<'cards' | 'list' | 'kanban'>(() => {
+	const [viewMode, setViewMode] = useState<'cards' | 'list' | 'crm'>(() => { // Removed 'kanban'
 		if (typeof window !== 'undefined') {
 			const saved = localStorage.getItem('viewMode')
-			return (saved as 'cards' | 'list' | 'kanban') || 'cards'
+			return (saved as 'cards' | 'list') || 'cards' // Removed 'kanban'
 		}
 		return 'cards'
 	})
@@ -415,7 +425,7 @@ export default function HomePage() {
 	// const [filters, setFilters] = useState<TaskFilters>({}) // Removed unused filters
 
 	// Función para cambiar vista y persistir en localStorage
-	const changeViewMode = (newViewMode: 'cards' | 'list' | 'kanban') => {
+	const changeViewMode = (newViewMode: 'cards' | 'list' | 'crm') => { // Removed 'kanban'
 		setViewMode(newViewMode)
 		if (typeof window !== 'undefined') {
 			localStorage.setItem('viewMode', newViewMode)
@@ -429,6 +439,14 @@ export default function HomePage() {
 		const savedTasks = loadFromStorage(STORAGE_KEYS.TASKS, mockTasks)
 		const savedActiveList = loadFromStorage(STORAGE_KEYS.ACTIVE_LIST, 'all')
 
+		// Debug logs - COMMENTED OUT AFTER FIX
+		/*
+		console.log('🔍 Datos cargados desde localStorage:')
+		console.log('- Listas guardadas:', savedLists?.length || 0, savedLists)
+		console.log('- Tareas guardadas:', savedTasks?.length || 0, savedTasks)
+		console.log('- Lista activa:', savedActiveList)
+		*/
+
 		// Asegurar que "Tareas Rápidas" siempre exista
 		const ensureQuickTasksList = (lists: List[]) => {
 			const quickTasksExists = lists.some(list => list.id === 'quick-tasks')
@@ -437,7 +455,7 @@ export default function HomePage() {
 					id: 'quick-tasks',
 					title: 'Tareas Rápidas',
 					description: 'Lista por defecto para tareas creadas rápidamente',
-					color: '#6366f1',
+					color: '#d87254',
 					icon: 'list',
 					position: 999,
 					isDefault: true,
@@ -451,6 +469,9 @@ export default function HomePage() {
 		}
 
 		const listsWithQuickTasks = ensureQuickTasksList(savedLists)
+
+		// Debug log - COMMENTED OUT AFTER FIX
+		// console.log('✅ Listas finales a establecer:', listsWithQuickTasks?.length || 0, listsWithQuickTasks)
 
 		setLists(listsWithQuickTasks)
 		setTasks(savedTasks)
@@ -962,24 +983,30 @@ export default function HomePage() {
 
 	// Función para obtener el color de la lista activa
 	const getActiveListColor = (): string => {
-		if (!activeListId) return '#6366f1'
+		if (!activeListId) return '#d87254'
 		
 		switch (activeListId) {
 			case 'todas':
-				return '#6366f1'
+				return '#d87254'  // Terracota principal
 			case 'all':
-				return '#6366f1'
+				return '#d87254'  // Terracota principal
 			case 'today':
-				return '#3b82f6'
+				return '#c85a3a'  // Terracota 600
 			case 'important':
-				return '#f59e0b'
+				return '#a8472f'  // Terracota 700
 			case 'completed':
-				return '#10b981'
+				return '#e3cfaa'  // Beige 500
 			case 'archived':
-				return '#6b7280'
+				return '#d4b894'  // Beige 600
 			default:
 				const list = lists.find(l => l.id === activeListId)
-				return list ? list.color : '#6366f1'
+				if (list) {
+					// Forzar colores de la paleta Arrebol para todas las listas personalizadas
+					const arrebolColors = ['#d87254', '#c85a3a', '#a8472f', '#e3cfaa', '#d4b894', '#c4a27c', '#f5d5cd', '#edb9a8', '#8b6f4a']
+					const isArrebolColor = arrebolColors.includes(list.color)
+					return isArrebolColor ? list.color : '#d87254' // Si no es color Arrebol, usar terracota principal
+				}
+				return '#d87254'
 		}
 	}
 
@@ -1003,14 +1030,52 @@ export default function HomePage() {
 		setLists(prev => [...prev, newList])
 	}
 
+	// TEMPORARY: Function to force reset data - COMMENTED OUT AFTER FIX
+	/*
+	const handleForceReset = () => {
+		console.log('🔄 Forzando reset de datos...')
+		
+		// Clear localStorage
+		if (typeof window !== 'undefined') {
+			localStorage.removeItem('gestor-tareas-lists')
+			localStorage.removeItem('gestor-tareas-tasks')
+			localStorage.removeItem('gestor-tareas-active-list')
+			console.log('✅ localStorage limpiado')
+		}
+		
+		// Reset state to mock data
+		setLists(mockLists)
+		setTasks(mockTasks)
+		setActiveListId('todas')
+		setIsHydrated(true)
+		
+		console.log('✅ Estado reseteado a datos mock:', mockLists?.length, 'listas')
+	}
+	*/
+
 	return (
 		<div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 dark:from-black dark:to-gray-900">
 			{/* Header */}
 			<Header />
 			
+			{/* TEMPORARY: Debug button to reset localStorage - COMMENTED OUT AFTER FIX */}
+			{/*
+			<div className="fixed top-20 right-4 z-50 flex flex-col gap-2">
+				<button
+					onClick={handleForceReset}
+					className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm font-medium shadow-lg"
+				>
+					🔄 Restaurar Listas
+				</button>
+				<div className="bg-blue-500 text-white px-3 py-1 rounded text-xs">
+					Listas: {lists?.length || 0} | Tareas: {tasks?.length || 0}
+				</div>
+			</div>
+			*/}
+			
 			{/* Main Layout */}
 			<div className="flex-1 flex gap-0">
-				{/* Sidebar */}
+				{/* Sidebar - Fijo */}
 				<div className="sidebar-container apple-sidebar apple-scroll">
 					<Sidebar
 						lists={lists}
@@ -1025,8 +1090,8 @@ export default function HomePage() {
 					/>
 				</div>
 
-				{/* Main Content */}
-				<div className="content-container flex-1 flex flex-col apple-fade-in">
+				{/* Main Content - Con margen para el sidebar fijo */}
+				<div className="content-container flex-1 flex flex-col apple-fade-in ml-72">
 					{/* List Header */}
 					<div className="bg-transparent">
 						<div className="pr-8 pt-8 pb-4 pl-0">
@@ -1061,35 +1126,50 @@ export default function HomePage() {
 										onClick={() => changeViewMode('cards')}
 										className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
 											viewMode === 'cards'
-												? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-												: 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+												? 'bg-arrebol-terracota text-white shadow-md border border-arrebol-terracota'
+												: 'text-arrebol-beige-600 dark:text-arrebol-beige-400 hover:text-arrebol-terracota dark:hover:text-arrebol-terracota-light hover:bg-white/50'
 										}`}
 									>
 										<Grid3X3 size={16} />
 										Tarjetas
 									</button>
+									{/* Lista View - Temporarily disabled in favor of CRM view
 									<button
 										onClick={() => changeViewMode('list')}
 										className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
 											viewMode === 'list'
-												? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-												: 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+												? 'bg-arrebol-terracota text-white shadow-sm'
+												: 'text-arrebol-beige-600 dark:text-arrebol-beige-400 hover:text-arrebol-terracota dark:hover:text-arrebol-terracota-light'
 										}`}
 									>
 										<Rows3 size={16} />
 										Lista
 									</button>
+									*/}
+									<button
+										onClick={() => changeViewMode('crm')}
+										className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+											viewMode === 'crm'
+												? 'bg-arrebol-terracota text-white shadow-md border border-arrebol-terracota'
+												: 'text-arrebol-beige-600 dark:text-arrebol-beige-400 hover:text-arrebol-terracota dark:hover:text-arrebol-terracota-light hover:bg-white/50'
+										}`}
+									>
+										<Table size={16} />
+										Lista
+									</button>
+									{/* Kanban View - Temporarily disabled
 									<button
 										onClick={() => changeViewMode('kanban')}
 										className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
 											viewMode === 'kanban'
-												? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-												: 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+												? 'bg-arrebol-terracota text-white shadow-sm'
+												: 'text-arrebol-beige-600 dark:text-arrebol-beige-400 hover:text-arrebol-terracota dark:hover:text-arrebol-terracota-light'
 										}`}
 									>
 										<Columns3 size={16} />
 										Kanban
 									</button>
+									*/}
 								</div>
 							</div>
 						</div>
@@ -1104,7 +1184,7 @@ export default function HomePage() {
 								className="apple-fade-in"
 							/>
 						) : (
-							<div className="max-w-4xl mx-auto">
+							<div className="max-w-7xl mx-auto px-4">
 								{/* Mostrar botón de gestionar si estamos en "Completadas" o "Archivadas" y hay tareas */}
 								{(activeListId === 'completed' || activeListId === 'archived') && filteredTasks.length > 0 && (
 									<div className="mb-6 flex justify-end">
@@ -1146,6 +1226,22 @@ export default function HomePage() {
 									/>
 								)}
 
+								{viewMode === 'crm' && (
+									<TaskListViewCrm
+										tasks={sortedTasks}
+										lists={lists}
+										onToggleComplete={handleToggleComplete}
+										onUpdateStatus={handleUpdateStatus}
+										onUpdateTask={handleUpdateTask}
+										onEditTask={handleEditTask}
+										sortBy={sortBy}
+										sortOrder={sortOrder}
+										onSort={handleSort}
+									/>
+								)}
+
+								{/* Kanban View - Temporarily disabled */}
+								{/*
 								{viewMode === 'kanban' && (
 									<TaskKanbanView
 										tasks={sortedTasks}
@@ -1158,14 +1254,14 @@ export default function HomePage() {
 										onCancelDeletion={handleCancelDeletion}
 									/>
 								)}
+								*/}
 							</div>
 						)}
 					</div>
 				</div>
 			</div>
 
-			{/* Task Form Modal - Temporarily commented out due to compilation errors */}
-			{/* 
+			{/* Task Form Modal */}
 			<div className={isTaskFormOpen || !!editingTask ? 'apple-scale-in' : ''}>
 				<TaskForm
 					isOpen={isTaskFormOpen || !!editingTask}
@@ -1194,17 +1290,12 @@ export default function HomePage() {
 					isEditing={!!editingTask}
 				/>
 			</div>
-			*/}
 
 			{/* Quick Task FAB */}
 			<QuickTaskFab 
 				onCreateTask={handleCreateTask}
 				lists={lists}
 				activeListId={activeListId}
-				isOpen={isTaskFormOpen}
-				onToggle={handleToggleTaskForm}
-				openedFrom={openedFromButton ? 'button' : 'fab'}
-				initialConfig={openedFromButton ? getInitialConfig() : undefined}
 			/>
 
 			{/* Create List Modal */}

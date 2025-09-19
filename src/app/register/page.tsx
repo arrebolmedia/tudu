@@ -68,7 +68,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-arrebol-beige-100 to-arrebol-terracota-100 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
@@ -155,15 +155,15 @@ export default function RegisterPage() {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+            {/* <p className="text-sm text-gray-600">
               ¿Ya tienes una cuenta?{' '}
               <Link 
                 href="/auth/signin" 
-                className="font-medium text-blue-600 hover:text-blue-500"
+                className="font-medium text-arrebol-terracota-500 hover:text-arrebol-terracota-600"
               >
                 Inicia sesión
               </Link>
-            </p>
+            </p> */}
           </div>
         </CardContent>
       </Card>

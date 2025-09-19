@@ -126,11 +126,11 @@ export function Sidebar({ lists, activeListId, onListSelect, onCreateList, taskC
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-arrebol-terracota-500 rounded-lg flex items-center justify-center">
             <Sparkles size={18} className="text-white" />
           </div>
           <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Gestor de Tareas
+            LA NORIA
           </h1>
         </div>
       </div>

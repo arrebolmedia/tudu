@@ -13,10 +13,10 @@ export default function HomePage() {
       <div className="flex-1 flex items-center justify-center">
         <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            Gestor de Tareas
+            LA NORIA
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
-            Aplicación con Header funcionando
+            Sistema de gestión de bodas y eventos
           </p>
         </div>
       </div>

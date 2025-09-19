@@ -80,13 +80,10 @@ export function AuthForm({ mode, onToggleMode }: AuthFormProps) {
     <div className="w-full max-w-md space-y-6">
       <div className="text-center">
         <h2 className="text-3xl font-bold text-gray-900">
-          {mode === 'signin' ? 'Iniciar Sesión' : 'Crear Cuenta'}
+          Iniciar Sesión
         </h2>
         <p className="mt-2 text-sm text-gray-600">
-          {mode === 'signin' 
-            ? 'Ingresa a tu cuenta para gestionar tus tareas'
-            : 'Crea una nueva cuenta para comenzar'
-          }
+          Ingresa a tu cuenta para gestionar tus tareas
         </p>
       </div>
 
@@ -97,7 +94,7 @@ export function AuthForm({ mode, onToggleMode }: AuthFormProps) {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {mode === 'signup' && (
+        {/* {mode === 'signup' && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Nombre completo
@@ -114,7 +111,24 @@ export function AuthForm({ mode, onToggleMode }: AuthFormProps) {
               />
             </div>
           </div>
-        )}
+        {/* {mode === 'signup' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Nombre completo
+            </label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Tu nombre completo"
+                className="pl-10"
+                required
+              />
+            </div>
+          </div>
+        )} */}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -155,23 +169,24 @@ export function AuthForm({ mode, onToggleMode }: AuthFormProps) {
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          {mode === 'signup' && (
+          {/* {mode === 'signup' && (
             <p className="text-xs text-gray-500 mt-1">
               Mínimo 6 caracteres
             </p>
-          )}
+          )} */}
         </div>
 
-        {mode === 'signin' && (
-          <div className="text-right">
-            <Link
-              href="/auth/forgot-password"
-              className="text-sm text-blue-600 hover:text-blue-500"
-            >
-              ¿Olvidaste tu contraseña?
-            </Link>
-          </div>
-        )}
+        {/* {mode === 'signin' && ( */}
+        <div className="text-right">
+          <Link
+            href="/auth/forgot-password"
+            className="text-sm text-arrebol-terracota-500 hover:text-arrebol-terracota-600"
+          >
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </div>
+        {/* )} */}
+        {/* )} */}
 
         <Button
           type="submit"
@@ -180,9 +195,7 @@ export function AuthForm({ mode, onToggleMode }: AuthFormProps) {
         >
           {loading 
             ? 'Procesando...' 
-            : mode === 'signin' 
-              ? 'Iniciar Sesión' 
-              : 'Crear Cuenta'
+            : 'Iniciar Sesión'
           }
         </Button>
       </form>
@@ -215,16 +228,16 @@ export function AuthForm({ mode, onToggleMode }: AuthFormProps) {
       */}
 
       <div className="text-center">
-        <button
+        {/* <button
           type="button"
           onClick={onToggleMode}
-          className="text-sm text-blue-600 hover:text-blue-500"
+          className="text-sm text-arrebol-terracota-500 hover:text-arrebol-terracota-600"
         >
           {mode === 'signin' 
             ? '¿No tienes cuenta? Crear cuenta'
             : '¿Ya tienes cuenta? Iniciar sesión'
           }
-        </button>
+        </button> */}
       </div>
     </div>
   )

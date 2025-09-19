@@ -45,22 +45,22 @@ const iconOptions = [
 ]
 
 const colorOptions = [
-  '#3b82f6', // blue
-  '#ef4444', // red
-  '#10b981', // green
-  '#8b5cf6', // purple
-  '#f59e0b', // yellow
-  '#06b6d4', // cyan
-  '#ec4899', // pink
-  '#84cc16', // lime
-  '#f97316', // orange
-  '#6366f1'  // indigo
+  '#d87254', // terracota principal
+  '#c85a3a', // terracota 600
+  '#a8472f', // terracota 700
+  '#e3cfaa', // beige 500
+  '#d4b894', // beige 600
+  '#c4a27c', // beige 700
+  '#f5d5cd', // terracota 200
+  '#edb9a8', // terracota 300
+  '#e39478', // terracota 400
+  '#8b6f4a'  // beige 900
 ]
 
 export function CreateListModal({ isOpen, onClose, onSubmit }: CreateListModalProps) {
   const [title, setTitle] = useState('')
   const [selectedIcon, setSelectedIcon] = useState('list')
-  const [selectedColor, setSelectedColor] = useState('#6366f1')
+  const [selectedColor, setSelectedColor] = useState('#c2682a') // terracota como color por defecto
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -72,7 +72,7 @@ export function CreateListModal({ isOpen, onClose, onSubmit }: CreateListModalPr
       })
       setTitle('')
       setSelectedIcon('list')
-      setSelectedColor('#6366f1')
+      setSelectedColor('#c2682a') // terracota
       onClose()
     }
   }
@@ -80,7 +80,7 @@ export function CreateListModal({ isOpen, onClose, onSubmit }: CreateListModalPr
   const handleClose = () => {
     setTitle('')
     setSelectedIcon('list')
-    setSelectedColor('#6366f1')
+    setSelectedColor('#c2682a') // terracota
     onClose()
   }
 
@@ -95,15 +95,15 @@ export function CreateListModal({ isOpen, onClose, onSubmit }: CreateListModalPr
       />
       
       {/* Modal */}
-      <div className="relative w-full max-w-md mx-4 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700">
+      <div className="relative w-full max-w-md mx-4 bg-arrebol-beige-light dark:bg-gray-900 rounded-2xl shadow-2xl border border-arrebol-terracota/20 dark:border-gray-700">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+        <div className="flex items-center justify-between p-6 border-b border-arrebol-terracota/20 dark:border-gray-700">
+          <h2 className="text-xl font-semibold text-arrebol-terracota dark:text-white font-montserrat">
             Crear nueva lista
           </h2>
           <button
             onClick={handleClose}
-            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-2 text-arrebol-terracota/70 hover:text-arrebol-terracota dark:hover:text-gray-300 rounded-lg hover:bg-arrebol-beige dark:hover:bg-gray-800 transition-colors"
           >
             <X size={20} />
           </button>
@@ -121,7 +121,7 @@ export function CreateListModal({ isOpen, onClose, onSubmit }: CreateListModalPr
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Escribe el nombre de tu lista..."
-              className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-arrebol-beige-300 dark:border-arrebol-beige-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-arrebol-terracota focus:border-transparent"
               autoFocus
             />
           </div>
@@ -139,14 +139,14 @@ export function CreateListModal({ isOpen, onClose, onSubmit }: CreateListModalPr
                   onClick={() => setSelectedIcon(name)}
                   className={`p-3 rounded-lg border-2 transition-all hover:scale-105 ${
                     selectedIcon === name
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                      ? 'border-arrebol-terracota bg-arrebol-beige-50 dark:bg-arrebol-terracota-950/30'
+                      : 'border-arrebol-beige-200 dark:border-arrebol-beige-700 hover:border-arrebol-beige-300 dark:hover:border-arrebol-beige-600'
                   }`}
                   title={label}
                 >
                   <IconComponent 
                     size={20} 
-                    className={selectedIcon === name ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}
+                    className={selectedIcon === name ? 'text-arrebol-terracota dark:text-arrebol-terracota-light' : 'text-arrebol-beige-600 dark:text-arrebol-beige-400'}
                   />
                 </button>
               ))}
@@ -206,7 +206,7 @@ export function CreateListModal({ isOpen, onClose, onSubmit }: CreateListModalPr
             <button
               type="submit"
               disabled={!title.trim()}
-              className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors font-medium"
+              className="flex-1 px-4 py-3 bg-arrebol-terracota text-white rounded-lg hover:bg-arrebol-terracota-dark disabled:bg-arrebol-beige-300 dark:disabled:bg-arrebol-beige-700 disabled:cursor-not-allowed transition-colors font-medium"
             >
               Crear lista
             </button>

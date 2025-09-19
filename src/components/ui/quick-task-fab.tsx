@@ -99,7 +99,7 @@ const getDueDateColor = (date: Date) => {
   tomorrow.setDate(tomorrow.getDate() + 1)
   
   if (dateToCheck < today) return 'bg-red-50 dark:bg-red-900 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700'
-  if (dateToCheck.getTime() === today.getTime()) return 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700'
+  if (dateToCheck.getTime() === today.getTime()) return 'bg-arrebol-terracota/10 dark:bg-arrebol-terracota/20 text-arrebol-terracota dark:text-arrebol-terracota-light border-arrebol-terracota/20 dark:border-arrebol-terracota/30'
   if (dateToCheck.getTime() === tomorrow.getTime()) return 'bg-orange-50 dark:bg-orange-900 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700'
   return 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700'
 }
@@ -222,10 +222,10 @@ export function QuickTaskFab({ onCreateTask, lists, activeListId, isOpen, onTogg
       <div className="fixed bottom-6 right-6 z-30">
         <button
           onClick={() => setIsExpanded(true)}
-          className="w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-105 relative group"
+          className="w-14 h-14 bg-arrebol-terracota-500 hover:bg-arrebol-terracota-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-105 relative group"
         >
           <div className="absolute -top-0.5 -right-0.5">
-            <Sparkles className="h-3 w-3 text-yellow-300 animate-pulse" />
+            <Sparkles className="h-3 w-3 text-arrebol-cream-300 animate-pulse" />
           </div>
           <Plus className="w-6 h-6 relative z-10" />
         </button>
@@ -387,7 +387,7 @@ export function QuickTaskFab({ onCreateTask, lists, activeListId, isOpen, onTogg
                   className={cn(
                     "apple-tag px-3 py-1.5 text-sm font-medium rounded-full flex items-center gap-2 transition-colors duration-200 border border-gray-200 dark:border-gray-700",
                     openSelector === 'list' || selectedListId
-                      ? "bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300"
+                      ? "bg-arrebol-terracota/10 dark:bg-arrebol-terracota/20 text-arrebol-terracota dark:text-arrebol-terracota-light"
                       : "bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
                   )}
                 >
@@ -423,8 +423,8 @@ export function QuickTaskFab({ onCreateTask, lists, activeListId, isOpen, onTogg
                 className={cn(
                   "w-8 h-8 rounded-full transition-all duration-200 flex items-center justify-center flex-shrink-0 transform hover:scale-105",
                   title.trim()
-                    ? "bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl"
-                    : "bg-gray-300 dark:bg-gray-600"
+                    ? "bg-arrebol-terracota-500 hover:bg-arrebol-terracota-600 shadow-lg hover:shadow-xl"
+                    : "bg-arrebol-beige-300 dark:bg-gray-600"
                 )}
               >
                 <ArrowUp className={cn(

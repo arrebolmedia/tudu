@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     // Enviar email
     const emailResult = await sendEmail({
       to: email,
-      subject: 'Restablece tu contraseña - Tudú',
+      subject: 'Restablece tu contraseña - Tasks by Arrebol Weddings',
       html: generatePasswordResetEmailHTML(user.name || 'Usuario', resetUrl)
     })
 

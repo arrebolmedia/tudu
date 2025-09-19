@@ -19,7 +19,8 @@ import {
   Crown,
   Download,
   CheckCircle,
-  XCircle
+  XCircle,
+  Trash2
 } from 'lucide-react'
 
 export default function ProfilePage() {
@@ -34,6 +35,9 @@ export default function ProfilePage() {
     newPassword: '',
     confirmPassword: ''
   })
+  
+  // Estado para la foto de perfil
+  const [profileImage, setProfileImage] = useState<string | null>(null)
   
   // Estados para configuraciones
   const [settings, setSettings] = useState({
@@ -105,12 +109,64 @@ export default function ProfilePage() {
         email: session.user.email || ''
       }))
     }
+    
+    // Cargar imagen de perfil desde localStorage
+    const savedImage = localStorage.getItem('profileImage')
+    if (savedImage) {
+      setProfileImage(savedImage)
+    }
   }, [session])
 
   // Manejar cambios en el formulario
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  // Manejar cambio de foto de perfil
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Validar tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        setErrorMessage('Por favor selecciona un archivo de imagen válido')
+        return
+      }
+      
+      // Validar tamaño (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setErrorMessage('La imagen debe ser menor a 5MB')
+        return
+      }
+      
+      // Crear URL temporal para mostrar la imagen
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        const imageUrl = event.target?.result as string
+        setProfileImage(imageUrl)
+        // Guardar en localStorage
+        localStorage.setItem('profileImage', imageUrl)
+        setSuccessMessage('Imagen actualizada correctamente')
+        setErrorMessage('')
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  // Función para eliminar foto de perfil
+  const handleRemoveImage = () => {
+    setProfileImage(null)
+    localStorage.removeItem('profileImage')
+    setSuccessMessage('Imagen eliminada correctamente')
+    // Limpiar el input de archivo
+    const input = document.getElementById('profile-image-input') as HTMLInputElement
+    if (input) input.value = ''
+  }
+
+  // Función para abrir el selector de archivos
+  const handleCameraClick = () => {
+    const input = document.getElementById('profile-image-input') as HTMLInputElement
+    input?.click()
   }
 
   // Manejar cambios en configuraciones
@@ -240,8 +296,8 @@ export default function ProfilePage() {
     { id: 'personal', label: 'Información Personal', icon: User },
     { id: 'security', label: 'Seguridad', icon: Lock },
     { id: 'notifications', label: 'Notificaciones', icon: Bell },
-    { id: 'preferences', label: 'Preferencias', icon: Globe },
-    { id: 'subscription', label: 'Suscripción', icon: CreditCard }
+    // { id: 'preferences', label: 'Preferencias', icon: Globe },
+    // { id: 'subscription', label: 'Suscripción', icon: CreditCard }
   ]
 
   return (
@@ -307,16 +363,45 @@ export default function ProfilePage() {
                 {/* Avatar */}
                 <div className="flex items-center space-x-6">
                   <div className="relative">
-                    <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-2xl">
-                      {session?.user?.name?.charAt(0).toUpperCase() || 'U'}
+                    <div className="w-24 h-24 bg-arrebol-terracota-500 rounded-full flex items-center justify-center text-white font-bold text-2xl font-display overflow-hidden">
+                      {profileImage ? (
+                        <img 
+                          src={profileImage} 
+                          alt="Foto de perfil" 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        session?.user?.name?.charAt(0).toUpperCase() || 'U'
+                      )}
                     </div>
-                    <button className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-lg border-2 border-gray-200 hover:border-blue-500 transition-colors">
+                    <button 
+                      onClick={handleCameraClick}
+                      className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-lg border-2 border-gray-200 hover:border-blue-500 transition-colors"
+                    >
                       <Camera className="w-4 h-4 text-gray-600" />
                     </button>
+                    {/* Input de archivo oculto */}
+                    <input
+                      id="profile-image-input"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
                   </div>
                   <div>
                     <h3 className="text-lg font-medium text-gray-900">Foto de perfil</h3>
                     <p className="text-sm text-gray-600">Haz clic en el ícono de cámara para cambiar tu foto</p>
+                    <p className="text-xs text-gray-500 mt-1">Formatos: JPG, PNG, GIF (máx. 5MB)</p>
+                    {profileImage && (
+                      <button
+                        onClick={handleRemoveImage}
+                        className="mt-2 text-red-600 hover:text-red-800 text-sm font-medium flex items-center space-x-1"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span>Eliminar foto</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -503,8 +588,8 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* Preferencias */}
-            {activeTab === 'preferences' && (
+            {/* Preferencias - Comentado temporalmente */}
+            {/* {activeTab === 'preferences' && (
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold text-gray-900">Preferencias</h2>
                 
@@ -553,14 +638,13 @@ export default function ProfilePage() {
                   {isLoading ? 'Guardando...' : 'Guardar preferencias'}
                 </button>
               </div>
-            )}
+            )} */}
 
-            {/* Suscripción */}
-            {activeTab === 'subscription' && (
+            {/* Suscripción - Comentado temporalmente */}
+            {/* {activeTab === 'subscription' && (
               <div className="space-y-8">
                 <h2 className="text-2xl font-bold text-gray-900">Suscripción</h2>
                 
-                {/* Plan Actual */}
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center">
@@ -599,7 +683,6 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  {/* Funcionalidades del Plan */}
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                     <div className="flex items-center">
                       <CheckCircle className={`w-5 h-5 mr-2 ${subscription.features.maxTasks ? 'text-green-500' : 'text-gray-400'}`} />
@@ -640,12 +723,10 @@ export default function ProfilePage() {
                   )}
                 </div>
 
-                {/* Planes Disponibles */}
                 {subscription.plan === 'free' && (
                   <div>
                     <h3 className="text-xl font-bold text-gray-900 mb-4">Planes Disponibles</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Plan Pro */}
                       <div className="border border-blue-200 rounded-xl p-6 relative bg-gradient-to-br from-blue-50 to-blue-100">
                         <div className="absolute top-4 right-4">
                           <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium">
@@ -689,7 +770,6 @@ export default function ProfilePage() {
                         </button>
                       </div>
 
-                      {/* Plan Enterprise */}
                       <div className="border border-purple-200 rounded-xl p-6 bg-gradient-to-br from-purple-50 to-purple-100">
                         <div className="flex items-center mb-4">
                           <Crown className="w-8 h-8 text-purple-600 mr-3" />
@@ -731,7 +811,6 @@ export default function ProfilePage() {
                   </div>
                 )}
 
-                {/* Historial de Facturas */}
                 {subscription.plan !== 'free' && (
                   <div>
                     <h3 className="text-xl font-bold text-gray-900 mb-4">Historial de Facturas</h3>
@@ -796,7 +875,6 @@ export default function ProfilePage() {
                   </div>
                 )}
 
-                {/* Gestión de Suscripción */}
                 {subscription.plan !== 'free' && (
                   <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
                     <h3 className="text-lg font-bold text-gray-900 mb-4">Gestión de Suscripción</h3>
@@ -820,7 +898,7 @@ export default function ProfilePage() {
                   </div>
                 )}
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>

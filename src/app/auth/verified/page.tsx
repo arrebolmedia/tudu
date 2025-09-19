@@ -4,7 +4,7 @@ import { CheckCircle } from 'lucide-react'
 
 export default function VerifiedPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-arrebol-beige-100 to-arrebol-terracota-100 px-4">
       <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg text-center">
         <div className="space-y-4">
           <TuduLogo className="justify-center" size="lg" />
@@ -25,13 +25,13 @@ export default function VerifiedPage() {
         <div className="space-y-4">
           <Link
             href="/auth/signin"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg inline-block transition-colors"
+            className="w-full bg-arrebol-terracota-500 hover:bg-arrebol-terracota-600 text-white font-medium py-3 px-4 rounded-lg inline-block transition-colors"
           >
             Iniciar Sesión
           </Link>
           
           <p className="text-sm text-gray-500">
-            ¡Bienvenido a Tudú! Estamos emocionados de tenerte con nosotros.
+            ¡Bienvenido a LA NORIA! Estamos emocionados de tenerte con nosotros.
           </p>
         </div>
       </div>

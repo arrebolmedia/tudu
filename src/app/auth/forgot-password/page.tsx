@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-arrebol-beige-100 to-arrebol-terracota-100 px-4">
       <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg">
         <div className="text-center space-y-4">
           <TuduLogo className="justify-center" size="lg" />
@@ -52,7 +52,7 @@ export default function ForgotPasswordPage() {
               ¿Olvidaste tu contraseña?
             </h1>
             <p className="mt-2 text-sm text-gray-600">
-              No te preocupes, te enviaremos un enlace para restablecerla
+              Te enviaremos un enlace a tu email para restablecer tu contraseña de LA NORIA
             </p>
           </div>
         </div>
@@ -99,7 +99,7 @@ export default function ForgotPasswordPage() {
         <div className="text-center">
           <Link
             href="/auth/signin"
-            className="inline-flex items-center text-sm text-blue-600 hover:text-blue-500"
+            className="inline-flex items-center text-sm text-arrebol-terracota-500 hover:text-arrebol-terracota-600"
           >
             <ArrowLeft className="w-4 h-4 mr-1" />
             Volver al inicio de sesión

@@ -1,23 +1,39 @@
-# Gestor de Tareas 📝
+# 🌹 TASKS BY ARREBOL WEDDINGS
 
-Un gestor de tareas moderno y completo inspirado en Microsoft To Do, construido con Next.js, Prisma y Docker.
+Un sistema especializado de gestión de tareas diseñado específicamente para bodas y eventos especiales. Con una interfaz elegante que combina colores beige y terracota, tipografías sofisticadas y funcionalidades intuitivas.
 
-## 🚀 Características
+## ✨ CARACTERÍSTICAS PRINCIPALES
 
-- **CRUD completo de tareas** - Crear, leer, actualizar y eliminar tareas
-- **Gestión de listas** - Organiza tus tareas en listas personalizables
-- **Prioridades** - Baja, Normal, Alta, Urgente
-- **Fechas de vencimiento** - Programa tus tareas
-- **Subtareas** - Divide tareas grandes en pasos más pequeños
-- **Etiquetas** - Categoriza y filtra tus tareas
-- **Interfaz moderna** - Diseño responsive inspirado en Microsoft Fluent
-- **Base de datos robusta** - PostgreSQL con Prisma ORM
+### 🎨 **DISEÑO ELEGANTE**
+- **Paleta de colores beige y terracota** inspirada en bodas románticas
+- **Tipografías elegantes**: Playfair Display con títulos en mayúsculas
+- **Interfaz moderna** con efectos de blur y transiciones suaves
+- **Logo personalizado** con elementos decorativos únicos
 
-## 🛠️ Stack Tecnológico
+### 📋 **GESTIÓN AVANZADA DE TAREAS**
+- **Vista Kanban** con arrastrar y soltar
+- **Vista de Lista** organizada y limpia
+- **Vista de Tarjetas** visual e intuitiva
+- **Tres estados**: PENDIENTE, EN PROGRESO, COMPLETADO
 
-- **Frontend**: Next.js 15 + React + TypeScript
-- **Styling**: Tailwind CSS + Radix UI
-- **Backend**: Next.js API Routes
+### 🔧 **Funcionalidades**
+- ✅ Crear, editar y eliminar tareas
+- 🏷️ Categorización por listas personalizadas
+- 📅 Fechas de vencimiento
+- ⭐ Prioridades (Alta, Media, Baja)
+- 🗂️ Archivo de tareas completadas
+- 🔄 Sincronización en tiempo real
+- 📱 Diseño responsive
+
+## 🛠️ Tecnologías
+
+- **Framework**: Next.js 15.4.1
+- **Base de datos**: Prisma + SQLite
+- **Autenticación**: NextAuth.js
+- **UI**: Tailwind CSS + Radix UI
+- **Drag & Drop**: @dnd-kit
+- **TypeScript**: Para desarrollo tipado
+- **Iconos**: Lucide React
 - **Base de datos**: PostgreSQL + Prisma ORM
 - **Containerización**: Docker + Docker Compose
 - **Iconos**: Lucide React

@@ -1,8 +1,9 @@
 'use client'
 
-import { CheckSquare, Sparkles, User, LogOut, Settings } from 'lucide-react'
+import { Heart, User, LogOut, Settings } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { ArrebolWeddingsLogo } from '@/components/ui/arrebol-weddings-logo'
 
 export function Header() {
   const { data: session, status } = useSession()
@@ -19,77 +20,67 @@ export function Header() {
   console.log('Header render - Status:', status, 'Session:', !!session)
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-200/50 bg-white/80 backdrop-blur-xl">
-      <div className="flex w-full">
-        <div className="w-72 flex-shrink-0"></div>
-        <div className="flex-1 py-4 px-8">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg">
-                  <CheckSquare className="h-6 w-6 text-white" />
-                </div>
-                <div className="absolute -top-1 -right-1">
-                  <Sparkles className="h-4 w-4 text-yellow-400 animate-pulse" />
-                </div>
-              </div>
-              <div className="flex flex-col">
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                  Tudú
-                </h1>
-                <p className="text-sm text-gray-500 font-medium">
-                  Tus pendientes en un solo lugar
-                </p>
-              </div>
-            </div>
+    <header className="sticky top-0 z-50 w-full border-b border-arrebol-beige-200 bg-arrebol-beige-50/90 backdrop-blur-xl">
+      <div className="w-full py-4 px-8">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <ArrebolWeddingsLogo size="md" showText={true} />
+          </div>
 
             <div className="flex items-center space-x-4">
               {session ? (
                 <div className="relative group">
-                  <button className="flex items-center space-x-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-full hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg">
+                  <button className="flex items-center space-x-3 bg-arrebol-terracota-500 hover:bg-arrebol-terracota-600 text-white px-4 py-2 rounded-full transition-colors duration-200 shadow-lg font-display">
                     <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                       {session.user?.name?.charAt(0).toUpperCase() || session.user?.email?.charAt(0).toUpperCase() || 'U'}
                     </div>
                     <span className="text-sm font-medium">{session.user?.name || session.user?.email}</span>
                   </button>
                   
-                  <div className="absolute right-0 top-full mt-3 w-56 bg-white rounded-2xl shadow-2xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                    <div className="py-2">
-                      <div className="px-4 py-3 border-b">
-                        <p className="text-sm font-semibold text-gray-900">Mi cuenta</p>
-                        <p className="text-xs text-gray-500">{session.user?.email}</p>
+                  {/* Dropdown Menu */}
+                  <div className="absolute right-0 top-full mt-2 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-2 shadow-xl backdrop-blur-xl">
+                      <div className="p-3 border-b border-gray-100 dark:border-gray-800">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{session.user?.name || 'Usuario'}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{session.user?.email}</p>
                       </div>
-                      <button 
-                        onClick={handleProfileClick}
-                        className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 flex items-center"
-                      >
-                        <User className="mr-3 h-4 w-4 text-blue-500" />
-                        Perfil
-                      </button>
-                      <button className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 flex items-center">
-                        <Settings className="mr-3 h-4 w-4 text-blue-500" />
-                        Configuración
-                      </button>
-                      <div className="border-t my-1"></div>
-                      <button 
-                        onClick={handleLogout}
-                        className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center"
-                      >
-                        <LogOut className="mr-3 h-4 w-4" />
-                        Cerrar sesión
-                      </button>
+                      
+                      <div className="py-1">
+                        <button
+                          onClick={handleProfileClick}
+                          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-arrebol-beige-100 dark:hover:bg-gray-800 transition-colors duration-200 text-sm"
+                        >
+                          <User className="w-4 h-4 text-arrebol-terracota-500" />
+                          <span>Mi Perfil</span>
+                        </button>
+                        
+                        <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-arrebol-beige-100 dark:hover:bg-gray-800 transition-colors duration-200 text-sm">
+                          <Settings className="w-4 h-4 text-arrebol-terracota-500" />
+                          <span>Configuración</span>
+                        </button>
+                      </div>
+                      
+                      <div className="border-t border-gray-100 dark:border-gray-800 pt-1">
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors duration-200 text-sm"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Cerrar Sesión</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="text-sm text-red-500 bg-red-50 px-3 py-1 rounded">
-                  No hay sesión activa
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-arrebol-terracota-500"></div>
+                  <span className="text-sm text-arrebol-beige-600">Cargando...</span>
                 </div>
               )}
             </div>
           </div>
         </div>
-      </div>
     </header>
   )
 }

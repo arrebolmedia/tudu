@@ -1,30 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Variables CSS personalizadas para el tema */
+/* Apple-style sidebar styles */
+.apple-sidebar-item-active:hover {
+    background: linear-gradient(135deg, #c85a3a 0%, #a8472f 100%);
+    transform: translateX(2px);
+    box-shadow: 0 6px 20px rgba(200, 90, 58, 0.4);
+  }
+  
+  .dark .apple-sidebar-item-active {
+    background: linear-gradient(135deg, #d87254 0%, #c85a3a 100%);
+    box-shadow: 0 4px 12px rgba(216, 114, 84, 0.4);
+  }
+  
+  .dark .apple-sidebar-item-active:hover {
+    background: linear-gradient(135deg, #c85a3a 0%, #a8472f 100%);
+    box-shadow: 0 6px 20px rgba(200, 90, 58, 0.5);
+  }
+
+/* Variables CSS para Arrebol Weddings */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    /* Arrebol Weddings Theme - Light Mode */
+    --background: 44 50% 98%;  /* Cream very light */
+    --foreground: 25 25% 15%;  /* Dark brown */
+    --card: 44 35% 95%;
+    --card-foreground: 25 25% 15%;
+    --popover: 44 35% 95%;
+    --popover-foreground: 25 25% 15%;
+    --primary: 15 65% 57%;     /* Terracota principal */
+    --primary-foreground: 44 50% 98%;
+    --secondary: 35 40% 85%;   /* Beige secundario */
+    --secondary-foreground: 25 25% 15%;
+    --muted: 35 35% 90%;
+    --muted-foreground: 25 15% 45%;
+    --accent: 35 40% 85%;
+    --accent-foreground: 25 25% 15%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 44 50% 98%;
+    --border: 35 25% 85%;
+    --input: 35 25% 90%;
+    --ring: 15 65% 57%;
+    --radius: 0.75rem;
+  }
+
+  /* Arrebol Weddings body styling */
+  body {
+    background: linear-gradient(135deg, #fefdfb 0%, #f7f0e4 50%, #f2e7d3 100%);
+    min-height: 100vh;
   }
 
   .dark {
@@ -60,15 +86,70 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+  
+  /* Arrebol Weddings Typography */
+  /* Logo exclusivamente en Playfair Display */
+  .arrebol-logo {
+    font-family: 'Playfair Display', Georgia, serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+  }
+  
+  /* Títulos en Montserrat para mejor legibilidad */
+  h1, h2, h3, .arrebol-title {
+    font-family: 'Montserrat', Arial, sans-serif !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.02em !important;
+  }
+  
+  /* Excepción: Títulos de tareas mantienen el texto natural */
+  .task-title {
+    text-transform: none !important;
+  }
+  
+  .arrebol-brand-text {
+    font-family: 'Montserrat', Arial, sans-serif !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+  }
 }
 
-/* Componentes personalizados */
+/* Arrebol Weddings Custom Styles */
+@layer components {
+  .arrebol-title {
+    @apply font-sans font-bold uppercase tracking-wider text-arrebol-terracota-700;
+  }
+  
+  .arrebol-subtitle {
+    @apply font-modern font-medium uppercase tracking-wide text-arrebol-beige-700 text-sm;
+  }
+  
+  .arrebol-heading {
+    @apply font-sans font-semibold uppercase tracking-wide text-arrebol-terracota-600;
+  }
+}
+
+/* Context Menu Styles - Actualizado */
 @layer components {
   /* Separación visual entre sidebar y contenido */
   .sidebar-container {
-    position: relative;
+    position: fixed !important;
+    top: 80px !important;
+    left: 0 !important;
     min-width: 280px;
     max-width: 320px;
+    width: 280px !important;
+    height: calc(100vh - 80px) !important;
+    overflow-y: auto;
+    overflow-x: visible !important;
+    z-index: 60;
+    contain: layout;
+    will-change: scroll-position;
+    transform: translateZ(0);
+    isolation: isolate;
   }
   
   .content-container {
@@ -189,9 +270,9 @@
   }
   
   .apple-sidebar-item-active {
-    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    background: linear-gradient(135deg, #d87254 0%, #c85a3a 100%);
     color: white;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 4px 12px rgba(216, 114, 84, 0.3);
     position: relative;
     overflow: hidden;
   }
@@ -203,7 +284,7 @@
     right: -1px;
     bottom: -1px;
     left: -1px;
-    background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+    background: linear-gradient(135deg, #e39478 0%, #d87254 100%);
     border-radius: inherit;
     z-index: -1;
   }
@@ -402,6 +483,44 @@
 
   .animate-fade-out-toast {
     animation: fade-out-toast 0.3s ease-out forwards;
+  }
+
+  /* Hide scrollbar for CRM list view */
+  .content-scroll-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .content-scroll-container {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+
+  /* Custom scrollbar for Kanban columns */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.4);
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(156, 163, 175, 0.7);
+  }
+
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.4) transparent;
   }
 
 }

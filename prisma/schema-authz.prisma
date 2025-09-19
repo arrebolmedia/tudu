@@ -1,0 +1,696 @@
+// This is your Prisma schema file with complete RBAC/ABAC authorization system
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===== CORE AUTHENTICATION & AUTHORIZATION =====
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  avatar    String?
+  isActive  Boolean  @default(true)
+  emailVerified DateTime?
+  
+  // Authorization fields
+  roleId    String
+  teamId    String?
+  venueId   String?  // Multi-tenant support
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastLogin DateTime?
+  
+  // Relations
+  role      Role     @relation(fields: [roleId], references: [id])
+  team      Team?    @relation(fields: [teamId], references: [id])
+  venue     Venue?   @relation(fields: [venueId], references: [id])
+  
+  // Business entity ownership
+  ownedClients   Client[]   @relation("ClientOwner")
+  ownedWeddings  Wedding[]  @relation("WeddingOwner")
+  ownedVendors   Vendor[]   @relation("VendorOwner")
+  ownedTasks     Task[]     @relation("TaskOwner")
+  
+  // Assignment relationships
+  coordinatedWeddings Wedding[] @relation("WeddingCoordinator")
+  plannedWeddings     Wedding[] @relation("WeddingPlanner")
+  assignedClients     Client[]  @relation("ClientSalesExec")
+  
+  // Auth & security
+  sessions        Session[]
+  passwordResets  PasswordReset[]
+  invitations     Invitation[]
+  apiKeys         ApiKey[]
+  
+  // Audit trail
+  auditLogs       AuditLog[]
+  
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique // SuperAdmin, Propietario, Gestor, Vendedor, GerenteBanquetes, Planner
+  description String?
+  isSystem    Boolean  @default(false) // System roles cannot be deleted
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  users       User[]
+  
+  @@map("roles")
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  color       String?
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  users       User[]
+  clients     Client[]
+  weddings    Wedding[]
+  vendors     Vendor[]
+  tasks       Task[]
+  
+  @@map("teams")
+}
+
+model Venue {
+  id          String   @id @default(cuid())
+  name        String
+  address     String?
+  city        String?
+  state       String?
+  country     String   @default("Mexico")
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  users       User[]
+  clients     Client[]
+  weddings    Wedding[]
+  vendors     Vendor[]
+  tasks       Task[]
+  
+  @@map("venues")
+}
+
+// ===== POLICY & PERMISSIONS SYSTEM =====
+
+model PolicyVersion {
+  id          String   @id @default(cuid())
+  label       String   @unique // v1, v2, etc.
+  description String?
+  isActive    Boolean  @default(false)
+  rawYaml     String?  // Store original YAML for import/export
+  
+  createdAt   DateTime @default(now())
+  createdBy   String?
+  
+  // Relations
+  rules       PolicyRule[]
+  fieldRules  FieldRule[]
+  
+  @@map("policy_versions")
+}
+
+model PolicyRule {
+  id          String   @id @default(cuid())
+  versionId   String
+  
+  // Rule definition
+  entity      String   // "Client", "Wedding", "Vendor", etc.
+  action      String   // "create", "read", "update", "delete", "export"
+  scopes      String[] // ["global", "team", "own", "assigned_by_coordinator"]
+  rolesAllow  String[] @map("roles_allow") // Override: specific roles that bypass scope rules
+  rolesDeny   String[] @map("roles_deny")  // Explicit deny for specific roles
+  
+  // ABAC attributes (JSON conditions)
+  attributes  Json?    // { "status": ["active"], "venue_id": "$CURRENT_VENUE" }
+  
+  // Relations
+  version     PolicyVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  
+  @@unique([versionId, entity, action])
+  @@map("policy_rules")
+}
+
+model FieldRule {
+  id          String   @id @default(cuid())
+  versionId   String
+  
+  // Field definition
+  entity      String   // "Client", "Wedding", etc.
+  field       String   // "email", "budget", "sales_exec_id"
+  modes       Json     // { "Viewer": "hidden", "Editor": "edit", "Sales": "read" }
+  
+  // Relations
+  version     PolicyVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  
+  @@unique([versionId, entity, field])
+  @@map("field_rules")
+}
+
+// ===== AUDIT & SECURITY =====
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  
+  // User context
+  userId      String?
+  userEmail   String?  // Backup in case user is deleted
+  userRole    String?
+  
+  // Action details
+  entity      String   // "Client", "Wedding", etc.
+  entityId    String?  // Record ID if applicable
+  action      String   // "create", "read", "update", "delete"
+  field       String?  // For field-level changes
+  
+  // Authorization result
+  allowed     Boolean
+  reason      String?  // Why denied: "insufficient_role", "field_read_only", etc.
+  
+  // Change tracking
+  diffBefore  Json?
+  diffAfter   Json?
+  
+  // Request context
+  ip          String?
+  userAgent   String?
+  endpoint    String?  // API endpoint called
+  method      String?  // HTTP method
+  
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  user        User?    @relation(fields: [userId], references: [id])
+  
+  @@index([userId, createdAt])
+  @@index([entity, entityId])
+  @@index([allowed])
+  @@map("audit_logs")
+}
+
+model Session {
+  id          String   @id @default(cuid())
+  userId      String
+  token       String   @unique
+  refreshToken String? @unique
+  expiresAt   DateTime
+  isActive    Boolean  @default(true)
+  
+  // Session metadata
+  ip          String?
+  userAgent   String?
+  deviceInfo  String?
+  
+  createdAt   DateTime @default(now())
+  lastUsed    DateTime @default(now())
+  
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model PasswordReset {
+  id          String   @id @default(cuid())
+  userId      String
+  token       String   @unique
+  expiresAt   DateTime
+  isUsed      Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  usedAt      DateTime?
+  
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([token])
+  @@index([expiresAt])
+  @@map("password_resets")
+}
+
+model Invitation {
+  id          String   @id @default(cuid())
+  email       String
+  roleId      String
+  teamId      String?
+  venueId     String?
+  token       String   @unique
+  expiresAt   DateTime
+  isAccepted  Boolean  @default(false)
+  
+  invitedBy   String
+  acceptedAt  DateTime?
+  
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  inviter     User     @relation(fields: [invitedBy], references: [id])
+  
+  @@index([email])
+  @@index([token])
+  @@map("invitations")
+}
+
+model ApiKey {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String   // Human-readable name
+  keyHash     String   @unique // Hashed API key
+  permissions Json?    // Scoped permissions for this key
+  isActive    Boolean  @default(true)
+  expiresAt   DateTime?
+  lastUsed    DateTime?
+  
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@map("api_keys")
+}
+
+// ===== BUSINESS ENTITIES =====
+
+model Client {
+  id              String   @id @default(cuid())
+  
+  // Basic info
+  firstName       String
+  lastName        String
+  email           String?
+  phone           String?
+  secondaryPhone  String?
+  address         String?
+  city            String?
+  state           String?
+  country         String   @default("Mexico")
+  
+  // Business fields
+  budget          Decimal?
+  source          String?  // How they found us
+  notes           String?
+  priority        ClientPriority @default(MEDIUM)
+  status          ClientStatus   @default(LEAD)
+  tags            String[]
+  
+  // Authorization & assignment fields
+  ownerId         String?  // Who created this client
+  teamId          String?  // Team assignment
+  venueId         String?  // Multi-tenant
+  salesExecId     String?  @map("sales_exec_id") // Assigned sales executive
+  
+  // Metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  lastContactAt   DateTime?
+  
+  // Relations
+  owner           User?    @relation("ClientOwner", fields: [ownerId], references: [id])
+  team            Team?    @relation(fields: [teamId], references: [id])
+  venue           Venue?   @relation(fields: [venueId], references: [id])
+  salesExec       User?    @relation("ClientSalesExec", fields: [salesExecId], references: [id])
+  
+  // Business relations
+  weddings        Wedding[]
+  tasks           Task[]
+  documents       Document[]
+  comments        Comment[]
+  
+  @@index([salesExecId])
+  @@index([teamId])
+  @@index([venueId])
+  @@index([status])
+  @@map("clients")
+}
+
+enum ClientStatus {
+  LEAD
+  QUALIFIED
+  PROPOSAL_SENT
+  NEGOTIATING
+  CONTRACT_SIGNED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  ARCHIVED
+}
+
+enum ClientPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Wedding {
+  id              String   @id @default(cuid())
+  
+  // Event details
+  brideName       String
+  groomName       String
+  weddingDate     DateTime?
+  venue           String?
+  guestCount      Int?
+  budget          Decimal?
+  theme           String?
+  notes           String?
+  
+  // Status & workflow
+  status          WeddingStatus @default(PLANNING)
+  stage           String?       // Planning phase
+  progress        Float?        // 0-100%
+  
+  // Authorization & assignment fields
+  clientId        String
+  ownerId         String?       // Who created this wedding
+  teamId          String?       // Team assignment
+  venueId         String?       // Multi-tenant
+  coordinatorId   String?       @map("coordinator_id") // Event coordinator
+  plannerId       String?       @map("planner_id")     // Wedding planner
+  
+  // Metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  owner           User?    @relation("WeddingOwner", fields: [ownerId], references: [id])
+  team            Team?    @relation(fields: [teamId], references: [id])
+  venue           Venue?   @relation(fields: [venueId], references: [id])
+  coordinator     User?    @relation("WeddingCoordinator", fields: [coordinatorId], references: [id])
+  planner         User?    @relation("WeddingPlanner", fields: [plannerId], references: [id])
+  
+  // Business relations
+  vendors         WeddingVendor[]
+  tasks           Task[]
+  documents       Document[]
+  payments        Payment[]
+  comments        Comment[]
+  
+  @@index([clientId])
+  @@index([coordinatorId])
+  @@index([plannerId])
+  @@index([weddingDate])
+  @@index([status])
+  @@map("weddings")
+}
+
+enum WeddingStatus {
+  PLANNING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  POSTPONED
+}
+
+model Vendor {
+  id              String   @id @default(cuid())
+  
+  // Basic info
+  name            String
+  category        VendorCategory
+  email           String?
+  phone           String?
+  website         String?
+  address         String?
+  city            String?
+  state           String?
+  country         String   @default("Mexico")
+  
+  // Business details
+  description     String?
+  services        String[]
+  priceRange      String?
+  rating          Float?
+  notes           String?
+  isPreferred     Boolean  @default(false)
+  
+  // Authorization fields
+  ownerId         String?
+  teamId          String?
+  venueId         String?
+  
+  // Metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  owner           User?    @relation("VendorOwner", fields: [ownerId], references: [id])
+  team            Team?    @relation(fields: [teamId], references: [id])
+  venue           Venue?   @relation(fields: [venueId], references: [id])
+  
+  // Business relations
+  weddings        WeddingVendor[]
+  documents       Document[]
+  
+  @@index([category])
+  @@index([teamId])
+  @@index([venueId])
+  @@map("vendors")
+}
+
+enum VendorCategory {
+  CATERING
+  PHOTOGRAPHY
+  VIDEOGRAPHY
+  FLOWERS
+  MUSIC
+  DECORATION
+  TRANSPORTATION
+  VENUE
+  CAKE
+  DRESS
+  SUIT
+  MAKEUP
+  HAIR
+  OTHER
+}
+
+model WeddingVendor {
+  id          String   @id @default(cuid())
+  weddingId   String
+  vendorId    String
+  
+  // Assignment details
+  services    String[]
+  budget      Decimal?
+  contract    String?  // Contract status
+  notes       String?
+  
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  vendor      Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  
+  @@unique([weddingId, vendorId])
+  @@map("wedding_vendors")
+}
+
+model Task {
+  id              String   @id @default(cuid())
+  
+  // Task details
+  title           String
+  description     String?
+  status          TaskStatus @default(PENDING)
+  priority        TaskPriority @default(MEDIUM)
+  dueDate         DateTime?
+  completedAt     DateTime?
+  
+  // Assignment & categorization
+  assignedTo      String?
+  category        String?
+  tags            String[]
+  
+  // Relations
+  clientId        String?
+  weddingId       String?
+  
+  // Authorization fields
+  ownerId         String?
+  teamId          String?
+  venueId         String?
+  
+  // Metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  client          Client?  @relation(fields: [clientId], references: [id])
+  wedding         Wedding? @relation(fields: [weddingId], references: [id])
+  owner           User?    @relation("TaskOwner", fields: [ownerId], references: [id])
+  team            Team?    @relation(fields: [teamId], references: [id])
+  venue           Venue?   @relation(fields: [venueId], references: [id])
+  
+  documents       Document[]
+  comments        Comment[]
+  
+  @@index([assignedTo])
+  @@index([status])
+  @@index([dueDate])
+  @@index([clientId])
+  @@index([weddingId])
+  @@map("tasks")
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  ON_HOLD
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Document {
+  id              String   @id @default(cuid())
+  
+  // File details
+  filename        String
+  originalName    String
+  mimeType        String
+  size            Int
+  url             String?
+  path            String?
+  
+  // Metadata
+  title           String?
+  description     String?
+  category        String?
+  tags            String[]
+  
+  // Relations
+  clientId        String?
+  weddingId       String?
+  vendorId        String?
+  taskId          String?
+  
+  // Authorization fields
+  ownerId         String?
+  teamId          String?
+  venueId         String?
+  
+  // Access control
+  isPublic        Boolean  @default(false)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  client          Client?  @relation(fields: [clientId], references: [id])
+  wedding         Wedding? @relation(fields: [weddingId], references: [id])
+  vendor          Vendor?  @relation(fields: [vendorId], references: [id])
+  task            Task?    @relation(fields: [taskId], references: [id])
+  
+  @@index([clientId])
+  @@index([weddingId])
+  @@index([category])
+  @@map("documents")
+}
+
+model Payment {
+  id              String   @id @default(cuid())
+  
+  // Payment details
+  amount          Decimal
+  currency        String   @default("MXN")
+  method          PaymentMethod
+  status          PaymentStatus @default(PENDING)
+  
+  // Payment info
+  reference       String?
+  description     String?
+  dueDate         DateTime?
+  paidAt          DateTime?
+  
+  // Relations
+  weddingId       String
+  
+  // Metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  wedding         Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  
+  @@index([weddingId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("payments")
+}
+
+enum PaymentMethod {
+  CASH
+  TRANSFER
+  CARD
+  CHECK
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  PARTIAL
+  OVERDUE
+  CANCELLED
+}
+
+model Comment {
+  id              String   @id @default(cuid())
+  content         String
+  author          String
+  timestamp       DateTime @default(now())
+  isInternal      Boolean  @default(false)
+  isImportant     Boolean  @default(false)
+  
+  // Relations
+  clientId        String?
+  weddingId       String?
+  taskId          String?
+  
+  // Relations
+  client          Client?  @relation(fields: [clientId], references: [id])
+  wedding         Wedding? @relation(fields: [weddingId], references: [id])
+  task            Task?    @relation(fields: [taskId], references: [id])
+  
+  @@index([clientId])
+  @@index([weddingId])
+  @@index([taskId])
+  @@map("comments")
+}

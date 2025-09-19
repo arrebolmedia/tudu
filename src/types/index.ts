@@ -3,6 +3,16 @@
 export type Priority = 'LOW' | 'NORMAL' | 'HIGH'
 export type TaskStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED'
 
+// CRM Types
+export type ClientStatus = 'NUEVO_CONTACTO' | 'ASIGNADO' | 'RECORRIDO_PROGRAMADO' | 'CLIENTE_CONTACTADO' | 'CERRADO_VENTA' | 'CERRADO_SIN_EXITO'
+export type ClientPriority = 'LOW' | 'NORMAL' | 'HIGH'
+export type ClientType = 'WEDDING' | 'QUINCEANOS' | 'BAUTIZO' | 'COMUNION' | 'CORPORATE' | 'SOCIAL' | 'OTHER'
+export type ClientArea = 'CASANUEVA' | 'CASA_MUNECAS' | 'ATRIO' | 'CABANAS'
+export type ClientChannel = 'INSTAGRAM' | 'FACEBOOK' | 'WHATSAPP_SOCIAL' | 'EMAIL' | 'PHONE' | 'WALKING' | 'REFERRAL' | 'RECURRENT' | 'BODAS_COM' | 'HACIENDAS_BODAS_COM'
+export type ClientExecutive = 'YARLENY_COLIN' | 'JOSEFO_FLORES' | 'SEBASTIAN_RAMIREZ'
+export type ClientCoordinator = 'BRENDA' | 'ANETTH' | 'ANDREA' | 'HUGO'
+export type AssignedExecutive = 'MARIA_LOPEZ' | 'CARLOS_GARCIA' | 'ANA_MARTINEZ' | 'JUAN_RODRIGUEZ' | 'SOFIA_FERNANDEZ'
+
 export interface User {
   id: string
   email: string
@@ -137,6 +147,84 @@ export const LIST_ICONS = [
 ] as const
 
 export const LIST_COLORS = [
-  '#3b82f6', '#ef4444', '#10b981', '#f59e0b', 
-  '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'
+  '#d87254', '#c85a3a', '#a8472f', '#e3cfaa', 
+  '#d4b894', '#c4a27c', '#f5d5cd', '#edb9a8'
+] as const
+
+// CRM Types
+export interface Client {
+  id: string
+  name: string                    // Nombre
+  eventDate?: Date               // Fecha del evento
+  phone?: string                 // Teléfono
+  email?: string                 // Mail
+  type?: ClientType              // Tipo de evento
+  area?: ClientArea              // Área/Salón
+  status: ClientStatus           // Status
+  channel?: ClientChannel        // Canal
+  createdAt: Date               // Fecha de creación
+  priority: ClientPriority      // Prioridad
+  notes?: string                // Notas
+  assignedExecutive?: ClientExecutive  // Ejecutivo asignado
+  coordinator?: ClientCoordinator      // Coordinador asignado
+  guestCount?: number                // Número de invitados
+  clientNumber?: string                // Número de cliente
+  archived?: boolean             // Cliente archivado
+  vip?: boolean                  // Cliente VIP
+}
+
+// Comments System
+export interface Comment {
+  id: string
+  clientId: string
+  content: string
+  author: string
+  timestamp: Date
+  isInternal?: boolean           // Comentario interno vs visible al cliente
+  isImportant?: boolean          // Comentario marcado como importante
+}
+
+export interface CreateClientData {
+  name: string
+  email?: string
+  phone?: string
+  company?: string
+  status?: ClientStatus
+  priority?: ClientPriority
+  notes?: string
+  budget?: number
+  eventDate?: Date
+  source?: string
+  assigned?: string
+  tags?: string[]
+}
+
+export interface UpdateClientData extends Partial<CreateClientData> {
+  id: string
+}
+
+export interface ClientFilters {
+  status?: ClientStatus
+  priority?: ClientPriority
+  assigned?: string
+  source?: string
+  search?: string
+  dateRange?: {
+    from?: Date
+    to?: Date
+  }
+}
+
+// Constantes para CRM
+export const CLIENT_STATUS_OPTIONS = [
+  { value: 'LEAD', label: 'Lead', color: '#8b5cf6', icon: '👀' },
+  { value: 'PROSPECT', label: 'Prospecto', color: '#f59e0b', icon: '🎯' },
+  { value: 'CLIENT', label: 'Cliente', color: '#10b981', icon: '✨' },
+  { value: 'INACTIVE', label: 'Inactivo', color: '#6b7280', icon: '😴' }
+] as const
+
+export const CLIENT_PRIORITY_OPTIONS = [
+  { value: 'LOW', label: 'Baja', color: 'gray' },
+  { value: 'MEDIUM', label: 'Media', color: 'orange' },
+  { value: 'HIGH', label: 'Alta', color: 'red' }
 ] as const

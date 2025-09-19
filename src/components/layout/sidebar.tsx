@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
 import { 
   Plus, 
   List, 
@@ -22,7 +23,10 @@ import {
   Gamepad2,
   Palette,
   Target,
-  Bookmark
+  Bookmark,
+  ChevronDown,
+  Users,
+  ClipboardList
 } from 'lucide-react'
 
 import { List as ListType } from '@/types'
@@ -63,33 +67,33 @@ const iconMap = {
 const smartLists = [
   {
     id: 'todas',
-    title: 'Todas',
+    title: 'Todas las tareas',
     icon: List,
-    color: '#6366f1'
+    color: '#d87254'  // Terracota principal
   },
   {
     id: 'today',
     title: 'Hoy',
     icon: Calendar,
-    color: '#3b82f6'
+    color: '#c85a3a'  // Terracota 600
   },
   {
     id: 'important',
     title: 'Importantes',
     icon: Star,
-    color: '#f59e0b'
+    color: '#a8472f'  // Terracota 700
   },
   {
     id: 'completed',
     title: 'Completadas',
     icon: CheckSquare,
-    color: '#10b981'
+    color: '#e3cfaa'  // Beige 500
   },
   {
     id: 'archived',
     title: 'Archivadas',
     icon: Archive,
-    color: '#6b7280'
+    color: '#d4b894'  // Beige 600
   }
 ]
 
@@ -124,16 +128,19 @@ function ListItem({
       className={cn(
         'w-full flex items-center justify-between px-4 py-3 text-left rounded-lg transition-all duration-200 group',
         isActive 
-          ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-sm' 
+          ? 'bg-arrebol-terracota/10 dark:bg-arrebol-terracota/20 text-arrebol-terracota dark:text-arrebol-terracota-light shadow-sm' 
           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
       )}
     >
       <div className="flex items-center space-x-3 flex-1 min-w-0">
         <div className="flex-shrink-0">
           <IconComponent
-            size={18}
             className="transition-colors duration-200"
-            style={color ? { color } : {}}
+            style={{ 
+              color: isActive 
+                ? (color || '#d87254')  // Color directo del smart list o terracota por defecto
+                : '#b6905a'  // Beige 600 aproximado
+            }}
           />
         </div>
         <span className="font-medium truncate text-sm">
@@ -153,7 +160,7 @@ function ListItem({
           <span className={cn(
             'text-xs px-2 py-1 rounded-full font-medium transition-colors duration-200',
             isActive 
-              ? 'bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200'
+              ? 'bg-arrebol-beige-200 dark:bg-arrebol-beige-700 text-arrebol-beige-800 dark:text-arrebol-beige-200'
               : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 group-hover:bg-gray-300 dark:group-hover:bg-gray-600'
           )}>
             {count}
@@ -175,6 +182,23 @@ export function Sidebar({
   searchQuery, 
   onSearchChange 
 }: SidebarProps) {
+  const router = useRouter()
+  const pathname = usePathname()
+  // Estados para el dropdown (deben ir antes del useEffect)
+  const [activeModule, setActiveModule] = useState('TASKS')
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+
+  // Determinar módulo activo basado en la ruta actual
+  useEffect(() => {
+    if (pathname.startsWith('/crm')) {
+      setActiveModule('CRM')
+    } else if (pathname.startsWith('/planning')) {
+      setActiveModule('PLANNING')
+    } else {
+      setActiveModule('TASKS')
+    }
+  }, [pathname])
+  
   const [contextMenu, setContextMenu] = useState<{
     x: number
     y: number
@@ -189,6 +213,20 @@ export function Sidebar({
     title: string
   } | null>(null)
   const [pinnedLists, setPinnedLists] = useState<Set<string>>(new Set())
+
+  // Cerrar dropdown al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isDropdownOpen) {
+        setIsDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isDropdownOpen])
 
   // Cargar listas fijadas desde localStorage al inicializar
   useEffect(() => {
@@ -278,41 +316,101 @@ export function Sidebar({
   const normalLists = lists.filter(list => list.id !== 'quick-tasks')
   const quickTasksList = lists.find(list => list.id === 'quick-tasks')
   
+  const modules = [
+    { id: 'TASKS', name: 'TAREAS', icon: ClipboardList, available: true },
+    { id: 'CRM', name: 'CRM', icon: Users, available: true },
+    { id: 'PLANNING', name: 'PLANNING', icon: Calendar, available: false }
+  ]
+  
   return (
-    <div className="h-full w-72 flex flex-col bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm">
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-            <Sparkles size={18} className="text-white" />
-          </div>
-          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Gestor de Tareas
-          </h1>
+    <div className="h-full w-72 flex flex-col bg-arrebol-beige-50/95 dark:bg-gray-900/95 backdrop-blur-sm overflow-x-hidden border-t border-arrebol-beige-200 dark:border-gray-700">
+      {/* Header with Simple Dropdown - FIJO, sin desplazamiento horizontal pero permite dropdown */}
+      <div className="px-6 pb-4 pt-3 border-b border-arrebol-beige-200 dark:border-gray-700 flex-shrink-0 relative z-10">
+        <div className="relative">
+          <button 
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="flex items-center justify-between w-full py-2 text-left hover:text-arrebol-terracota-600 dark:hover:text-arrebol-terracota-400 transition-colors duration-200"
+          >
+            <h1 className="font-display font-bold text-xl text-arrebol-terracota-600 dark:text-arrebol-terracota-400 uppercase tracking-wide">
+              {modules.find(m => m.id === activeModule)?.name || activeModule}
+            </h1>
+            <ChevronDown 
+              size={18} 
+              className={`text-arrebol-terracota-500 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} 
+            />
+          </button>
+          
+          {/* Simple Dropdown Menu */}
+          {isDropdownOpen && (
+            <div className="absolute left-0 mt-1 w-64 bg-white dark:bg-gray-800 border border-arrebol-beige-200 dark:border-gray-700 rounded-lg shadow-xl overflow-hidden z-[70]">
+              {modules.map((module) => (
+                <button
+                  key={module.id}
+                  onMouseDown={(e) => {
+                    e.preventDefault()
+                    
+                    if (module.available) {
+                      setActiveModule(module.id)
+                      
+                      // Navegar inmediatamente
+                      if (module.id === 'TASKS') {
+                        router.push('/')
+                      } else if (module.id === 'CRM') {
+                        router.push('/crm')
+                      } else if (module.id === 'PLANNING') {
+                        router.push('/planning')
+                      }
+                    }
+                    
+                    // Cerrar dropdown después
+                    setTimeout(() => setIsDropdownOpen(false), 50)
+                  }}
+                  disabled={!module.available}
+                  className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors duration-200 ${
+                    module.available 
+                      ? 'hover:bg-arrebol-beige-50 dark:hover:bg-gray-700 text-arrebol-terracota-700 dark:text-gray-100' 
+                      : 'text-arrebol-beige-400 dark:text-gray-500 cursor-not-allowed'
+                  } ${activeModule === module.id ? 'bg-arrebol-terracota-500 text-white' : ''}`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <module.icon size={16} className={`${activeModule === module.id ? 'text-white' : 'text-arrebol-terracota-500'}`} />
+                    <span className="font-display font-semibold text-sm uppercase tracking-wide">
+                      {module.name}
+                    </span>
+                  </div>
+                  {!module.available && (
+                    <span className="text-xs bg-arrebol-beige-200 dark:bg-gray-600 text-arrebol-beige-600 dark:text-gray-400 px-2 py-1 rounded-full">
+                      Próximamente
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Search */}
-      <div className="px-6 py-4">
+      {/* Search - FIJO, sin scroll horizontal */}
+      <div className="px-6 py-4 flex-shrink-0">
         <div className="relative">
-          <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-arrebol-beige-400" />
           <input
             type="text"
             placeholder="Buscar..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 text-sm bg-arrebol-beige-50 dark:bg-gray-800 border border-arrebol-beige-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-arrebol-terracota-400 focus:border-arrebol-terracota-400 text-arrebol-terracota-700 placeholder-arrebol-beige-400"
           />
         </div>
       </div>
 
-      {/* Lists */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Lists - Solo scroll vertical, NO horizontal */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
         <div className="px-6 py-2">
           {/* Smart Lists */}
           <div className="mb-6">
             <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-              Listas inteligentes
+              Vistas inteligentes
             </h2>
             <div className="space-y-1">
               {smartLists.map((smartList) => (
@@ -330,95 +428,59 @@ export function Sidebar({
             </div>
           </div>
 
-          {/* Línea divisoria entre listas inteligentes y mis listas */}
-          <div className="border-t border-gray-200 dark:border-gray-700 my-2" />
-
-          {/* Custom Lists */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Mis listas
-              </h2>
-              <button
-                onClick={onCreateList}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
-              >
-                <Plus size={16} />
-              </button>
-            </div>
-            <div className="space-y-1">
-              {normalLists
-                .sort((a, b) => {
-                  // Ordenar por fijadas primero, luego alfabéticamente
-                  const aIsPinned = pinnedLists.has(a.id)
-                  const bIsPinned = pinnedLists.has(b.id)
-                  
-                  if (aIsPinned && !bIsPinned) return -1
-                  if (!aIsPinned && bIsPinned) return 1
-                  
-                  return a.title.localeCompare(b.title)
-                })
-                .map((list) => {
-                const IconComponent = iconMap[list.icon as keyof typeof iconMap] || List
-                
-                // Si está en modo edición, mostrar input
-                if (editingList && editingList.id === list.id) {
-                  return (
-                    <div key={list.id} className="px-3 py-2">
-                      <input
-                        type="text"
-                        value={editingList.title}
-                        onChange={(e) => setEditingList({...editingList, title: e.target.value})}
-                        onBlur={() => handleSaveEdit(editingList.title)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            handleSaveEdit(editingList.title)
-                          } else if (e.key === 'Escape') {
-                            setEditingList(null)
-                          }
-                        }}
-                        className="w-full px-2 py-1 text-sm bg-white dark:bg-gray-700 border border-blue-300 dark:border-blue-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        autoFocus
-                      />
-                    </div>
-                  )
-                }
-                
-                return (
+          {/* MIS LISTAS - Custom User Lists */}
+          {normalLists.length > 0 && (
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Mis Listas
+                </h2>
+                <button
+                  onClick={onCreateList}
+                  className="p-1 hover:bg-arrebol-beige-100 dark:hover:bg-gray-700 rounded text-gray-400 hover:text-arrebol-terracota-500 transition-colors"
+                  title="Crear nueva lista"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+              <div className="space-y-1">
+                {normalLists.map((list) => (
                   <ListItem
                     key={list.id}
                     title={list.title}
-                    icon={IconComponent}
+                    icon={iconMap[list.icon as keyof typeof iconMap] || List}
                     color={list.color}
                     isActive={activeListId === list.id}
                     count={taskCounts[list.id] || 0}
                     onClick={() => onListSelect(list.id)}
                     onContextMenu={(e) => handleContextMenu(e, list.id)}
-                    canDelete={!list.isDefault}
                     isPinned={pinnedLists.has(list.id)}
                   />
-                )
-              })}
-              
-              {/* Tareas Rápidas siempre al final */}
-              {quickTasksList && (
-                <>
-                  <div className="border-t border-gray-200 dark:border-gray-700 my-2" />
-                  <ListItem
-                    key={quickTasksList.id}
-                    title={quickTasksList.title}
-                    icon={iconMap[quickTasksList.icon as keyof typeof iconMap] || List}
-                    color={quickTasksList.color}
-                    isActive={activeListId === quickTasksList.id}
-                    count={taskCounts[quickTasksList.id] || 0}
-                    onClick={() => onListSelect(quickTasksList.id)}
-                    canDelete={false}
-                    isPinned={false}
-                  />
-                </>
-              )}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Tareas Rápidas - Separate section */}
+          {quickTasksList && (
+            <div className="mb-6">
+              <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+                Tareas Rápidas
+              </h2>
+              <div className="space-y-1">
+                <ListItem
+                  key={quickTasksList.id}
+                  title={quickTasksList.title}
+                  icon={iconMap[quickTasksList.icon as keyof typeof iconMap] || List}
+                  color={quickTasksList.color}
+                  isActive={activeListId === quickTasksList.id}
+                  count={taskCounts[quickTasksList.id] || 0}
+                  onClick={() => onListSelect(quickTasksList.id)}
+                  isPinned={false}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

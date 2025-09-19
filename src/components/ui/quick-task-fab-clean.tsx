@@ -107,7 +107,7 @@ export function QuickTaskFab({ onCreateTask, lists, activeListId }: QuickTaskFab
       <div className="fixed bottom-6 right-6 z-30">
         <button
           onClick={() => setIsExpanded(true)}
-          className="w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-105 relative group"
+          className="w-14 h-14 bg-arrebol-terracota-500 hover:bg-arrebol-terracota-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center transform hover:scale-105 relative group"
         >
           <div className="absolute -top-0.5 -right-0.5">
             <Sparkles className="h-3 w-3 text-yellow-300 animate-pulse" />
@@ -122,7 +122,7 @@ export function QuickTaskFab({ onCreateTask, lists, activeListId }: QuickTaskFab
     <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div ref={containerRef} className="bg-white/98 dark:bg-gray-900/98 backdrop-blur-lg border border-gray-200/60 dark:border-gray-700/60 rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200/30 dark:border-gray-700/30 bg-gradient-to-r from-blue-500/5 to-purple-500/5">
+        <div className="px-6 py-4 border-b border-gray-200/30 dark:border-gray-700/30 bg-arrebol-beige-100/20">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Nueva tarea</h2>
             <button
@@ -229,7 +229,7 @@ export function QuickTaskFab({ onCreateTask, lists, activeListId }: QuickTaskFab
               className={cn(
                 "px-6 py-2 rounded-xl transition-all duration-200 font-medium relative group",
                 title.trim()
-                  ? "bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105"
+                  ? "bg-arrebol-terracota-500 hover:bg-arrebol-terracota-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 font-display"
                   : "bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
               )}
             >

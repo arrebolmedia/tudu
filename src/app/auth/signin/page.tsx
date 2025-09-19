@@ -27,9 +27,9 @@ export default function SignInPage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-arrebol-beige-100 to-arrebol-terracota-100">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-arrebol-terracota-500 mx-auto"></div>
           <p className="mt-4 text-gray-600">Cargando...</p>
         </div>
       </div>
@@ -61,7 +61,7 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-arrebol-beige-100 to-arrebol-terracota-100 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
@@ -69,7 +69,7 @@ export default function SignInPage() {
           </div>
           <CardTitle className="text-2xl font-bold">Iniciar sesión</CardTitle>
           <CardDescription>
-            Ingresa a tu cuenta para gestionar tus tareas
+            Ingresa a tu cuenta de LA NORIA
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -101,7 +101,7 @@ export default function SignInPage() {
             <div className="text-right">
               <Link
                 href="/auth/forgot-password"
-                className="text-sm text-blue-600 hover:text-blue-500"
+                className="text-sm text-arrebol-terracota-500 hover:text-arrebol-terracota-600"
               >
                 ¿Olvidaste tu contraseña?
               </Link>
@@ -125,15 +125,15 @@ export default function SignInPage() {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+            {/* <p className="text-sm text-gray-600">
               ¿No tienes una cuenta?{' '}
               <Link 
                 href="/register" 
-                className="font-medium text-blue-600 hover:text-blue-500"
+                className="font-medium text-arrebol-terracota-500 hover:text-arrebol-terracota-600"
               >
                 Crear cuenta
               </Link>
-            </p>
+            </p> */}
           </div>
         </CardContent>
       </Card>

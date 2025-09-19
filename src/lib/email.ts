@@ -16,7 +16,7 @@ export async function sendVerificationEmail(email: string, name: string, token: 
   const mailOptions = {
     from: process.env.SMTP_FROM,
     to: email,
-    subject: 'Verifica tu cuenta - Tudú',
+    subject: 'Verifica tu cuenta - Tasks by Arrebol Weddings',
     html: generateVerificationEmailHTML(name, verificationUrl),
   }
 
@@ -29,7 +29,7 @@ export async function sendPasswordResetEmail(email: string, name: string, token:
   const mailOptions = {
     from: process.env.SMTP_FROM,
     to: email,
-    subject: 'Restablecer contraseña - Tudú',
+    subject: 'Restablecer contraseña - Tasks by Arrebol Weddings',
     html: generatePasswordResetEmailHTML(name, resetUrl),
   }
 
@@ -42,7 +42,7 @@ export function generateVerificationEmailHTML(name: string, verificationUrl: str
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Verifica tu cuenta - Tudú</title>
+      <title>Verifica tu cuenta - Tasks by Arrebol Weddings</title>
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -51,7 +51,7 @@ export function generateVerificationEmailHTML(name: string, verificationUrl: str
         .logo-icon { 
           width: 48px; 
           height: 48px; 
-          background: linear-gradient(135deg, #3b82f6, #7c3aed); 
+          background: linear-gradient(135deg, #d87254, #c85a3a); 
           border-radius: 12px; 
           display: flex; 
           align-items: center; 
@@ -59,7 +59,7 @@ export function generateVerificationEmailHTML(name: string, verificationUrl: str
           position: relative;
         }
         .content { padding: 30px 0; }
-        .button { display: inline-block; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
+        .button { display: inline-block; background: linear-gradient(135deg, #d87254, #c85a3a); color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
         .footer { text-align: center; padding: 20px 0; border-top: 1px solid #eee; color: #666; font-size: 14px; }
       </style>
     </head>
@@ -79,15 +79,15 @@ export function generateVerificationEmailHTML(name: string, verificationUrl: str
               </svg>
             </div>
             <div>
-              <div style="font-weight: bold; font-size: 18px;">Tudú</div>
-              <div style="font-size: 14px; color: #666;">Tus pendientes en un solo lugar</div>
+              <div style="font-weight: bold; font-size: 18px;">Tasks by Arrebol Weddings</div>
+              <div style="font-size: 14px; color: #666;">Gestión elegante para tu día especial</div>
             </div>
           </div>
         </div>
         
         <div class="content">
-          <h1>¡Bienvenido a Tudú, ${name}!</h1>
-          <p>Gracias por registrarte en Tudú, tu gestor de tareas personal.</p>
+          <h1>¡Bienvenido a Tasks by Arrebol Weddings, ${name}!</h1>
+          <p>Gracias por registrarte en nuestro sistema especializado de gestión de tareas para bodas y eventos.</p>
           <p>Para completar tu registro y comenzar a organizar tus pendientes, necesitamos verificar tu dirección de email.</p>
           <a href="${verificationUrl}" class="button">Verificar mi cuenta</a>
           <p><small>Este enlace expirará en 24 horas por seguridad.</small></p>
@@ -109,7 +109,7 @@ export function generatePasswordResetEmailHTML(name: string, resetUrl: string) {
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Restablecer contraseña - Tudú</title>
+      <title>Restablecer contraseña - Tasks by Arrebol Weddings</title>
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -118,7 +118,7 @@ export function generatePasswordResetEmailHTML(name: string, resetUrl: string) {
         .logo-icon { 
           width: 48px; 
           height: 48px; 
-          background: linear-gradient(135deg, #3b82f6, #7c3aed); 
+          background: linear-gradient(135deg, #d87254, #c85a3a); 
           border-radius: 12px; 
           display: flex; 
           align-items: center; 
@@ -146,15 +146,15 @@ export function generatePasswordResetEmailHTML(name: string, resetUrl: string) {
               </svg>
             </div>
             <div>
-              <div style="font-weight: bold; font-size: 18px;">Tudú</div>
-              <div style="font-size: 14px; color: #666;">Tus pendientes en un solo lugar</div>
+              <div style="font-weight: bold; font-size: 18px;">Tasks by Arrebol Weddings</div>
+              <div style="font-size: 14px; color: #666;">Gestión elegante para tu día especial</div>
             </div>
           </div>
         </div>
         
         <div class="content">
           <h1>¡Hola ${name}!</h1>
-          <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en Tudú.</p>
+          <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en Tasks by Arrebol Weddings.</p>
           <p>Si no solicitaste este cambio, puedes ignorar este email de forma segura.</p>
           <p>Para restablecer tu contraseña, haz clic en el siguiente enlace:</p>
           <a href="${resetUrl}" class="button">Restablecer Contraseña</a>
@@ -162,7 +162,7 @@ export function generatePasswordResetEmailHTML(name: string, resetUrl: string) {
         </div>
         
         <div class="footer">
-          <p>© 2025 Tudú - Gestor de Tareas. Todos los derechos reservados.</p>
+          <p>© 2025 Tasks by Arrebol Weddings. Todos los derechos reservados.</p>
           <p>Este es un email automático, por favor no respondas a este mensaje.</p>
         </div>
       </div>

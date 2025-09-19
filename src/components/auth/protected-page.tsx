@@ -23,10 +23,13 @@ export default function ProtectedPage({ children }: ProtectedPageProps) {
 
   const isPublicPath = publicPaths.some(path => pathname.startsWith(path))
 
-  console.log('🔐 ProtectedPage - Status:', status, 'Session:', !!session, 'Path:', pathname, 'IsPublic:', isPublicPath)
+  // 🚧 MODO DESARROLLO: Permitir acceso sin autenticación
+  const isDevelopment = process.env.NODE_ENV === 'development'
+
+  console.log('🔐 ProtectedPage - Status:', status, 'Session:', !!session, 'Path:', pathname, 'IsPublic:', isPublicPath, 'Dev Mode:', isDevelopment)
 
   useEffect(() => {
-    console.log('🚀 ProtectedPage useEffect - Status:', status, 'IsPublic:', isPublicPath)
+    console.log('🚀 ProtectedPage useEffect - Status:', status, 'IsPublic:', isPublicPath, 'Dev Mode:', isDevelopment)
     
     // Si está cargando, esperar
     if (status === 'loading') {
@@ -35,7 +38,8 @@ export default function ProtectedPage({ children }: ProtectedPageProps) {
     }
 
     // Si no hay sesión y NO estamos en una ruta pública, redirigir a signin
-    if (status === 'unauthenticated' && !isPublicPath) {
+    // 🚧 DESARROLLO: Saltear autenticación en modo desarrollo
+    if (status === 'unauthenticated' && !isPublicPath && !isDevelopment) {
       console.log('🔴 ProtectedPage: No session on private route, redirecting to signin')
       router.push('/auth/signin')
       return
@@ -49,10 +53,10 @@ export default function ProtectedPage({ children }: ProtectedPageProps) {
     }
 
     console.log('✅ ProtectedPage: Route access authorized')
-  }, [status, router, isPublicPath, pathname])
+  }, [status, router, isPublicPath, pathname, isDevelopment])
 
-  // Mostrar loading mientras se verifica la sesión
-  if (status === 'loading') {
+  // Mostrar loading mientras se verifica la sesión (solo si NO estamos en desarrollo)
+  if (status === 'loading' && !isDevelopment) {
     console.log('⏳ ProtectedPage: Showing loading spinner')
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -64,8 +68,8 @@ export default function ProtectedPage({ children }: ProtectedPageProps) {
     )
   }
 
-  // Si no hay sesión y NO estamos en una ruta pública, mostrar mensaje de redirección
-  if (status === 'unauthenticated' && !isPublicPath) {
+  // Si no hay sesión y NO estamos en una ruta pública, mostrar mensaje de redirección (solo si NO estamos en desarrollo)
+  if (status === 'unauthenticated' && !isPublicPath && !isDevelopment) {
     console.log('🔴 ProtectedPage: Unauthenticated on private route, showing redirect message...')
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">

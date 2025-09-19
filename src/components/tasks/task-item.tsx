@@ -286,7 +286,7 @@ export function TaskItem({
 
   const getDueDateColor = (date: Date) => {
     if (isOverdue(date)) return 'text-red-600'
-    if (isToday(date)) return 'text-blue-600'
+    if (isToday(date)) return 'text-arrebol-terracota-600'
     if (isTomorrow(date)) return 'text-orange-600'
     return 'text-gray-600'
   }
@@ -438,8 +438,8 @@ export function TaskItem({
                   className={cn(
                     "w-5 h-5 transition-colors duration-200",
                     task.priority === 'HIGH' 
-                      ? "text-amber-500 fill-amber-500" 
-                      : "text-gray-300 hover:text-amber-400"
+                      ? "text-arrebol-terracota fill-arrebol-terracota" 
+                      : "text-gray-300 hover:text-arrebol-terracota/70"
                   )} 
                 />
               </button>
@@ -548,7 +548,7 @@ export function TaskItem({
                     task.completed ? "hover:bg-gray-25 dark:hover:bg-gray-800/25" : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
                   )}
                 >
-                  <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+                  <Calendar className="w-3.5 h-3.5 flex-shrink-0 text-arrebol-beige-600" />
                   {formatDueDate(new Date(task.dueDate))}
                 </button>
               </div>
@@ -576,7 +576,7 @@ export function TaskItem({
                   task.completed ? "hover:bg-gray-25 dark:hover:bg-gray-800/25" : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
                 )}
               >
-                <Flag className={cn("w-3.5 h-3.5 flex-shrink-0", getPriorityColor(task.priority))} />
+                <Flag className={cn("w-3.5 h-3.5 flex-shrink-0 text-arrebol-beige-600", getPriorityColor(task.priority))} />
                 {getPriorityLabel(task.priority)}
               </button>
             </div>
@@ -605,13 +605,22 @@ export function TaskItem({
                     const currentList = lists.find(l => l.id === task.listId)
                     const IconComponent = currentList?.icon ? iconMap[currentList.icon as keyof typeof iconMap] || ListIcon : ListIcon
                     return (
-                      <IconComponent 
-                        className="w-3.5 h-3.5 flex-shrink-0" 
-                        style={currentList?.color ? { color: currentList.color } : {}}
-                      />
+                      <>
+                        <IconComponent 
+                          className={cn(
+                            "w-3.5 h-3.5 flex-shrink-0",
+                            !currentList?.color && "text-arrebol-beige-600"
+                          )}
+                          style={currentList?.color ? { color: currentList.color } : {}}
+                        />
+                        <span className={cn(
+                          !currentList?.color && "text-arrebol-beige-600"
+                        )} style={currentList?.color ? { color: currentList.color } : {}}>
+                          {currentList?.title || 'Tareas Rápidas'}
+                        </span>
+                      </>
                     )
                   })()}
-                  {lists.find(l => l.id === task.listId)?.title || 'Tareas Rápidas'}
                 </button>
               </div>
             )}
@@ -799,12 +808,18 @@ export function TaskItem({
                   const IconComponent = iconMap[list.icon as keyof typeof iconMap] || ListIcon
                   return (
                     <IconComponent 
-                      className="w-4 h-4" 
-                      style={{ color: list.color }}
+                      className={cn(
+                        "w-4 h-4",
+                        !list.color && "text-arrebol-beige-600"
+                      )}
+                      style={list.color ? { color: list.color } : {}}
                     />
                   )
                 })()}
-                <span className="text-gray-700 dark:text-gray-300">{list.title}</span>
+                <span className={cn(
+                  "text-gray-700 dark:text-gray-300",
+                  !list.color && "text-arrebol-beige-600 dark:text-arrebol-beige-400"
+                )}>{list.title}</span>
               </button>
             ))}
           </div>

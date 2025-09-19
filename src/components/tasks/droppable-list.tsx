@@ -39,15 +39,15 @@ export function DroppableList({
     <div
       ref={setNodeRef}
       className={cn(
-        "p-4 rounded-xl border-2 border-dashed transition-all duration-200 min-h-32",
+        "p-6 rounded-xl border-2 border-dashed transition-all duration-200 min-h-32",
         isOver 
-          ? "border-blue-400 bg-blue-50 dark:bg-blue-950/20 shadow-lg" 
-          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+          ? "border-arrebol-terracota-400 bg-arrebol-terracota-50 dark:bg-arrebol-terracota-950/20 shadow-lg" 
+          : "border-arrebol-beige-300 dark:border-arrebol-beige-700 hover:border-arrebol-beige-400 dark:hover:border-arrebol-beige-600"
       )}
     >
-      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 px-2">
+      <h3 className="text-lg font-sans font-bold text-arrebol-terracota-700 dark:text-arrebol-beige-200 mb-4 px-2 uppercase tracking-wider">
         {title} {tasks.length > 0 && (
-          <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
+          <span className="ml-2 text-sm font-modern font-normal text-arrebol-beige-600 dark:text-arrebol-beige-400 lowercase tracking-normal">
             ({tasks.length})
           </span>
         )}
@@ -59,9 +59,9 @@ export function DroppableList({
       >
         <div className="space-y-4">
           {tasks.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              <p>No hay tareas en esta lista</p>
-              <p className="text-sm mt-1">Arrastra tareas aquí para organizarlas</p>
+            <div className="text-center py-8 text-arrebol-beige-600 dark:text-arrebol-beige-400">
+              <p className="font-elegant">No hay tareas en esta lista</p>
+              <p className="text-sm mt-1 font-modern">Arrastra tareas aquí para organizarlas</p>
             </div>
           ) : (
             tasks.map((task) => {
@@ -71,7 +71,7 @@ export function DroppableList({
                   key={task.id}
                   className={cn(
                     "transition-all duration-300",
-                    isAnimating && "animate-pulse bg-yellow-100 dark:bg-yellow-900/20 rounded-xl"
+                    isAnimating && "animate-pulse bg-arrebol-cream-100 dark:bg-arrebol-cream-900/20 rounded-xl"
                   )}
                 >
                   <SortableTaskItem
