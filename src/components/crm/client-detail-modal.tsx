@@ -10,6 +10,7 @@ import {
 import { Client, ClientStatus, ClientPriority, ClientType, ClientArea, ClientChannel, ClientExecutive, ClientCoordinator } from '@/types'
 import { useActivityLog } from '@/contexts/activity-log-context'
 import { useComments } from '@/contexts/comments-context'
+import { formatPhoneNumber } from '@/lib/utils'
 
 interface ClientDetailModalProps {
   client: Client
@@ -314,6 +315,17 @@ export function ClientDetailModal({ client, isOpen, onClose, onUpdate }: ClientD
     setTempValue(currentValue || '')
   }
 
+  // Manejar teclas en campos editables
+  const handleKeyDown = (e: React.KeyboardEvent, fieldName: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleFieldSave(fieldName)
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      handleFieldCancel()
+    }
+  }
+
   const handleFieldSave = (fieldName: string) => {
     let finalValue: any = tempValue
     
@@ -400,65 +412,41 @@ export function ClientDetailModal({ client, isOpen, onClose, onUpdate }: ClientD
     if (editingField === fieldName) {
       if (type === 'textarea') {
         return (
-          <div className="space-y-2">
-            <textarea
-              value={tempValue}
-              onChange={(e) => setTempValue(e.target.value)}
-              className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white resize-none ${className}`}
-              placeholder={placeholder}
-              rows={3}
-              autoFocus
-            />
-            <div className="flex space-x-2">
-              <button
-                onClick={() => handleFieldSave(fieldName)}
-                className="px-3 py-1 text-xs bg-orange-600 text-white rounded hover:bg-orange-700"
-              >
-                Guardar
-              </button>
-              <button
-                onClick={handleFieldCancel}
-                className="px-3 py-1 text-xs bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
+          <textarea
+            value={tempValue}
+            onChange={(e) => setTempValue(e.target.value)}
+            onKeyDown={(e) => handleKeyDown(e, fieldName)}
+            className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white resize-none ${className}`}
+            placeholder={placeholder}
+            rows={3}
+            autoFocus
+            onFocus={(e) => e.target.select()}
+            onBlur={() => handleFieldSave(fieldName)}
+          />
         )
       } else {
         return (
-          <div className="flex space-x-2 items-center">
-            <input
-              type={type === 'number' ? 'number' : 'text'}
-              value={tempValue}
-              onChange={(e) => setTempValue(e.target.value)}
-              className={`flex-1 px-3 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-orange-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${className}`}
-              placeholder={placeholder}
-              autoFocus
-              min={type === 'number' ? "1" : undefined}
-            />
-            <button
-              onClick={() => handleFieldSave(fieldName)}
-              className="px-2 py-1 text-xs bg-orange-600 text-white rounded hover:bg-orange-700"
-            >
-              ✓
-            </button>
-            <button
-              onClick={handleFieldCancel}
-              className="px-2 py-1 text-xs bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
-            >
-              ✕
-            </button>
-          </div>
+          <input
+            type={type === 'number' ? 'number' : 'text'}
+            value={tempValue}
+            onChange={(e) => setTempValue(e.target.value)}
+            onKeyDown={(e) => handleKeyDown(e, fieldName)}
+            className={`w-full px-3 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-orange-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${className}`}
+            placeholder={placeholder}
+            autoFocus
+            onFocus={(e) => e.target.select()}
+            onBlur={() => handleFieldSave(fieldName)}
+            min={type === 'number' ? "1" : undefined}
+          />
         )
       }
     } else {
       return (
         <span
           onClick={() => handleFieldEdit(fieldName, value)}
-          className={`cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 rounded px-1 py-0.5 transition-colors ${className} ${!value ? 'text-gray-400 italic' : ''}`}
+          className={`cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 rounded px-1 py-0.5 transition-colors block w-full ${className} ${!value ? 'text-gray-400 italic' : ''}`}
         >
-          {value || placeholder}
+          {fieldName === 'phone' && value ? formatPhoneNumber(value) : (value || placeholder)}
         </span>
       )
     }
@@ -577,6 +565,7 @@ export function ClientDetailModal({ client, isOpen, onClose, onUpdate }: ClientD
                     </h3>
                     {client.eventDate && (
                       <div className="relative">
+                        <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha del Evento</p>
                         <div className="text-sm text-gray-500 dark:text-gray-400 truncate mt-0.5 flex items-center">
                           <Calendar size={14} className="mr-1 flex-shrink-0" />
                           {formatDate(client.eventDate)}
@@ -589,53 +578,91 @@ export function ClientDetailModal({ client, isOpen, onClose, onUpdate }: ClientD
 
               {/* Tags Row (con funcionalidad editable) */}
               <div className="px-6 pb-4">
-                <div className="flex items-center flex-wrap gap-2">
-                  {/* Status Badge (editable) */}
-                  {renderEditableDropdown('status', client.status, statusOptions, getStatusLabel, getStatusColor)}
+                <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-3">Información del Evento</p>
+                
+                {/* Two Column Layout for Event Information */}
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Left Column */}
+                  <div className="space-y-3">
+                    {/* Status Badge (editable) */}
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Estado</p>
+                      {renderEditableDropdown('status', client.status, statusOptions, getStatusLabel, getStatusColor)}
+                    </div>
+                    {/* Type Badge (editable) */}
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Tipo de Evento</p>
+                      {renderEditableDropdown('type', client.type, typeOptions, getTypeLabel, getTypeColor)}
+                    </div>
+                    {/* Executive Badge (editable) */}
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Ejecutivo Asignado</p>
+                      {renderEditableDropdown('assignedExecutive', client.assignedExecutive, executiveOptions, getExecutiveLabel, getExecutiveColor)}
+                    </div>
+                  </div>
 
-                  {/* Priority Badge (editable) */}
-                  {renderEditableDropdown('priority', client.priority, priorityOptions, getPriorityLabel, getPriorityColor)}
-
-                  {/* Type Badge (editable) */}
-                  {renderEditableDropdown('type', client.type, typeOptions, getTypeLabel, getTypeColor)}
-                  
-                  {/* Area Badge (editable) */}
-                  {renderEditableDropdown('area', client.area, areaOptions, getAreaLabel, getAreaColor)}
-
-                  {/* Executive Badge (editable) */}
-                  {renderEditableDropdown('assignedExecutive', client.assignedExecutive, executiveOptions, getExecutiveLabel, getExecutiveColor)}
-
-                  {/* Coordinator Badge (editable) */}
-                  {renderEditableDropdown('coordinator', client.coordinator, coordinatorOptions, getCoordinatorLabel, getCoordinatorColor)}
+                  {/* Right Column */}
+                  <div className="space-y-3">
+                    {/* Priority Badge (editable) */}
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Prioridad</p>
+                      {renderEditableDropdown('priority', client.priority, priorityOptions, getPriorityLabel, getPriorityColor)}
+                    </div>
+                    {/* Area Badge (editable) */}
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Área</p>
+                      {renderEditableDropdown('area', client.area, areaOptions, getAreaLabel, getAreaColor)}
+                    </div>
+                    {/* Coordinator Badge (editable) */}
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Coordinador</p>
+                      {renderEditableDropdown('coordinator', client.coordinator, coordinatorOptions, getCoordinatorLabel, getCoordinatorColor)}
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Contact Info (editable) */}
-              <div className="px-6 pb-4 space-y-2 flex-1">
-                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                  <Mail size={14} className="mr-2 flex-shrink-0" />
-                  <span className="flex-1 min-w-0">
-                    {renderEditableField('email', client.email || '', 'email@ejemplo.com')}
-                  </span>
-                </div>
-                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                  <Phone size={14} className="mr-2 flex-shrink-0" />
-                  <span className="flex-1 min-w-0">
-                    {renderEditableField('phone', client.phone || '', '+34 666 777 888')}
-                  </span>
+              <div className="px-6 pb-4 space-y-4 flex-1">
+                <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-3">Información de Contacto</p>
+                
+                {/* Email */}
+                <div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Email</p>
+                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                    <Mail size={14} className="mr-2 flex-shrink-0" />
+                    <span className="flex-1 min-w-0">
+                      {renderEditableField('email', client.email || '', 'email@ejemplo.com')}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Número de invitados (editable) */}
-                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                  <Users size={14} className="mr-2 flex-shrink-0" />
-                  <span className="flex-1 min-w-0">
-                    {renderEditableField('guestCount', client.guestCount?.toString() || '', 'Número de invitados', 'number')}
-                  </span>
+                {/* Phone */}
+                <div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Teléfono</p>
+                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                    <Phone size={14} className="mr-2 flex-shrink-0" />
+                    <span className="flex-1 min-w-0">
+                      {renderEditableField('phone', client.phone || '', '+34 666 777 888')}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Guest Count */}
+                <div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Número de Invitados</p>
+                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                    <Users size={14} className="mr-2 flex-shrink-0" />
+                    <span className="flex-1 min-w-0">
+                      {renderEditableField('guestCount', client.guestCount?.toString() || '', 'Número de invitados', 'number')}
+                    </span>
+                  </div>
                 </div>
               </div>
 
               {/* Notes Preview (editable) */}
               <div className="px-6 pb-4">
+                <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-3">Notas y Comentarios</p>
                 <div className="flex items-start text-sm text-gray-600 dark:text-gray-400">
                   <FileText size={14} className="mr-2 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
@@ -647,13 +674,19 @@ export function ClientDetailModal({ client, isOpen, onClose, onUpdate }: ClientD
               {/* Footer (copiado de client-card) */}
               <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
                 <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex items-center">
-                      {renderEditableDropdown('channel', client.channel, channelOptions, getChannelLabel, getChannelColor)}
+                  <div className="flex items-center space-x-4">
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Canal</p>
+                      <div className="flex items-center">
+                        {renderEditableDropdown('channel', client.channel, channelOptions, getChannelLabel, getChannelColor)}
+                      </div>
                     </div>
-                    <div className="flex items-center">
-                      <Clock size={12} className="mr-1 flex-shrink-0" />
-                      <span>{formatDate(client.createdAt)}</span>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Fecha de Creación</p>
+                      <div className="flex items-center">
+                        <Clock size={12} className="mr-1 flex-shrink-0" />
+                        <span>{formatDate(client.createdAt)}</span>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { SYSTEM_USERS, ROLE_LABELS } from '@/lib/user-management';
 
 // GET /api/admin/users - Simplified version
 export async function GET(request: NextRequest) {
@@ -17,64 +18,23 @@ export async function GET(request: NextRequest) {
     //   return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 401 });
     // }
 
-    // Return mock data for now
-    const mockUsers = [
-      {
-        id: '1',
-        email: 'admin@arrebol.com.mx',
-        name: 'Administrador',
-        role: 'admin',
-        status: 'active',
-        createdAt: new Date('2025-01-01').toISOString(),
-        lastLogin: new Date('2025-09-19').toISOString(),
-        emailVerified: true
-      },
-      {
-        id: '2', 
-        email: 'demo@arrebol.com.mx',
-        name: 'Usuario Demo',
-        role: 'user',
-        status: 'active',
-        createdAt: new Date('2025-01-15').toISOString(),
-        lastLogin: new Date('2025-09-18').toISOString(),
-        emailVerified: true
-      },
-      {
-        id: '3',
-        email: 'guest@arrebol.com.mx', 
-        name: 'Invitado',
-        role: 'guest',
-        status: 'inactive',
-        createdAt: new Date('2025-02-01').toISOString(),
-        lastLogin: null,
-        emailVerified: false
-      },
-      {
-        id: '4',
-        email: 'coordinator@arrebol.com.mx', 
-        name: 'Coordinador de Eventos',
-        role: 'user',
-        status: 'active',
-        createdAt: new Date('2025-03-10').toISOString(),
-        lastLogin: new Date('2025-09-17').toISOString(),
-        emailVerified: true
-      },
-      {
-        id: '5',
-        email: 'designer@arrebol.com.mx', 
-        name: 'Diseñador Floral',
-        role: 'user',
-        status: 'active',
-        createdAt: new Date('2025-04-20').toISOString(),
-        lastLogin: new Date('2025-09-16').toISOString(),
-        emailVerified: true
-      }
-    ];
+    // Return system users instead of mock data
+    const apiUsers = SYSTEM_USERS.map(user => ({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role.toLowerCase(), // Convert to API format
+      roleLabel: ROLE_LABELS[user.role], // Include human-readable label
+      status: user.isActive ? 'active' : 'inactive',
+      createdAt: user.createdAt.toISOString(),
+      lastLogin: user.updatedAt.toISOString(), // Use updatedAt as proxy for lastLogin
+      emailVerified: true // Assume all system users are verified
+    }));
 
     return NextResponse.json({
       success: true,
-      data: mockUsers,
-      total: mockUsers.length,
+      data: apiUsers,
+      total: apiUsers.length,
       message: 'Usuarios obtenidos exitosamente'
     });
 

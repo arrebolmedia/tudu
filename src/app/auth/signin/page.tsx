@@ -49,7 +49,7 @@ export default function SignInPage() {
       })
 
       if (result?.ok) {
-        router.push('/')
+  router.push('/crm')
       } else {
         setError('Email o contraseña incorrectos')
       }

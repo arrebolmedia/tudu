@@ -1,4 +1,10 @@
 import { ClientStatus, ClientPriority, ClientType, ClientArea, ClientChannel, ClientExecutive, ClientCoordinator } from '@/types'
+import { 
+  generateExecutiveOptions, 
+  generateCoordinatorOptions, 
+  getUserById,
+  ROLE_COLORS 
+} from '@/lib/user-management'
 
 // Status
 export const getStatusColor = (status: ClientStatus) => {
@@ -158,52 +164,51 @@ export const getChannelLabel = (channel: ClientChannel) => {
 }
 
 // Executive
-export const getExecutiveColor = (executive: ClientExecutive) => {
-  switch (executive) {
-    case 'YARLENY_COLIN':
+export const getExecutiveColor = (executiveId: string) => {
+  const user = getUserById(executiveId)
+  if (!user) return 'bg-gray-500/10 text-gray-600 border-gray-200 dark:border-gray-800 dark:text-gray-400'
+  
+  // Usar colores específicos para cada ejecutivo por ID
+  switch (executiveId) {
+    case '1': // Yarleny Colín
       return 'bg-violet-500/10 text-violet-600 border-violet-200 dark:border-violet-800 dark:text-violet-400'
-    case 'JOSEFO_FLORES':
+    case '2': // Josefo Flores
       return 'bg-cyan-500/10 text-cyan-600 border-cyan-200 dark:border-cyan-800 dark:text-cyan-400'
-    case 'SEBASTIAN_RAMIREZ':
+    case '3': // Sebastián Ramírez
       return 'bg-lime-500/10 text-lime-600 border-lime-200 dark:border-lime-800 dark:text-lime-400'
     default:
-      return 'bg-gray-500/10 text-gray-600 border-gray-200 dark:border-gray-800 dark:text-gray-400'
+      return 'bg-green-500/10 text-green-600 border-green-200 dark:border-green-800 dark:text-green-400'
   }
 }
 
-export const getExecutiveLabel = (executive: ClientExecutive) => {
-  switch (executive) {
-    case 'YARLENY_COLIN': return 'Yarleny Colín'
-    case 'JOSEFO_FLORES': return 'Josefo Flores'
-    case 'SEBASTIAN_RAMIREZ': return 'Sebastián Ramírez'
-    default: return 'Sin asignar'
-  }
+export const getExecutiveLabel = (executiveId: string) => {
+  const user = getUserById(executiveId)
+  return user ? user.name : 'Sin asignar'
 }
 
 // Coordinator functions
-export const getCoordinatorColor = (coordinator: ClientCoordinator) => {
-  switch (coordinator) {
-    case 'BRENDA':
+export const getCoordinatorColor = (coordinatorId: string) => {
+  const user = getUserById(coordinatorId)
+  if (!user) return 'bg-gray-500/10 text-gray-600 border-gray-200 dark:border-gray-800 dark:text-gray-400'
+  
+  // Usar colores específicos para cada coordinador por ID
+  switch (coordinatorId) {
+    case '4': // Brenda
       return 'bg-rose-500/10 text-rose-600 border-rose-200 dark:border-rose-800 dark:text-rose-400'
-    case 'ANETTH':
+    case '5': // Anetth
       return 'bg-sky-500/10 text-sky-600 border-sky-200 dark:border-sky-800 dark:text-sky-400'
-    case 'ANDREA':
+    case '6': // Andrea
       return 'bg-purple-500/10 text-purple-600 border-purple-200 dark:border-purple-800 dark:text-purple-400'
-    case 'HUGO':
+    case '7': // Hugo
       return 'bg-teal-500/10 text-teal-600 border-teal-200 dark:border-teal-800 dark:text-teal-400'
     default:
-      return 'bg-gray-500/10 text-gray-600 border-gray-200 dark:border-gray-800 dark:text-gray-400'
+      return 'bg-orange-500/10 text-orange-600 border-orange-200 dark:border-orange-800 dark:text-orange-400'
   }
 }
 
-export const getCoordinatorLabel = (coordinator: ClientCoordinator) => {
-  switch (coordinator) {
-    case 'BRENDA': return 'Brenda'
-    case 'ANETTH': return 'Anetth'
-    case 'ANDREA': return 'Andrea'
-    case 'HUGO': return 'Hugo'
-    default: return 'Sin asignar'
-  }
+export const getCoordinatorLabel = (coordinatorId: string) => {
+  const user = getUserById(coordinatorId)
+  return user ? user.name : 'Sin asignar'
 }
 
 // Options arrays
@@ -251,13 +256,18 @@ export const channelOptions: { value: ClientChannel; label: string }[] = [
   { value: 'HACIENDAS_BODAS_COM', label: 'Haciendas - Bodas.com.mx' },
 ]
 
-export const executiveOptions: { value: ClientExecutive; label: string }[] = [
+// Dynamic options arrays from user management system
+export const executiveOptions = generateExecutiveOptions()
+export const coordinatorOptions = generateCoordinatorOptions()
+
+// Legacy support - mantener para compatibilidad
+export const legacyExecutiveOptions: { value: ClientExecutive; label: string }[] = [
   { value: 'YARLENY_COLIN', label: 'Yarleny Colín' },
   { value: 'JOSEFO_FLORES', label: 'Josefo Flores' },
   { value: 'SEBASTIAN_RAMIREZ', label: 'Sebastián Ramírez' },
 ]
 
-export const coordinatorOptions: { value: ClientCoordinator; label: string }[] = [
+export const legacyCoordinatorOptions: { value: ClientCoordinator; label: string }[] = [
   { value: 'BRENDA', label: 'Brenda' },
   { value: 'ANETTH', label: 'Anetth' },
   { value: 'ANDREA', label: 'Andrea' },

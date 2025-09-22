@@ -3,6 +3,8 @@
  * Sistema de permisos granulares por campo basado en usuarios específicos
  */
 
+import { UserRole } from '@/types'
+
 // Definir los tipos de permisos disponibles
 export type PermissionAction = 'view' | 'edit';
 
@@ -11,6 +13,7 @@ export interface UserFieldPermission {
   userId: string;
   userName: string;
   userEmail: string;
+  userRole: UserRole; // Agregar rol del usuario
   canDeleteRecord: boolean; // Permiso para eliminar todo el registro
   fieldPermissions: {
     [fieldId: string]: {
@@ -61,6 +64,7 @@ export const USER_SPECIFIC_PERMISSIONS: UserFieldPermission[] = [
     userId: '1',
     userName: 'Josefo Flores',
     userEmail: 'josefo@example.com',
+    userRole: 'VENDEDOR',
     canDeleteRecord: false, // No puede eliminar registros completos
     fieldPermissions: {
       // Para eventos/bodas - permisos según las tarjetas reales
@@ -83,6 +87,7 @@ export const USER_SPECIFIC_PERMISSIONS: UserFieldPermission[] = [
     userId: '2',
     userName: 'María González',
     userEmail: 'maria@example.com',
+    userRole: 'GERENTE',
     canDeleteRecord: true, // Puede eliminar registros completos
     fieldPermissions: {
       // Para eventos/bodas - permisos completos como supervisor
@@ -105,6 +110,7 @@ export const USER_SPECIFIC_PERMISSIONS: UserFieldPermission[] = [
     userId: '3',
     userName: 'Carlos Rodríguez',
     userEmail: 'carlos@example.com',
+    userRole: 'COLABORADOR',
     canDeleteRecord: false, // No puede eliminar registros completos
     fieldPermissions: {
       // Para eventos/bodas - permisos muy limitados
@@ -128,6 +134,7 @@ export const USER_SPECIFIC_PERMISSIONS: UserFieldPermission[] = [
     userId: '4',
     userName: 'Brenda',
     userEmail: 'brenda@example.com',
+    userRole: 'COORDINADOR',
     canDeleteRecord: false, // No puede eliminar registros
     fieldPermissions: {
       // Para eventos/bodas - solo lectura de campos básicos
@@ -150,6 +157,7 @@ export const USER_SPECIFIC_PERMISSIONS: UserFieldPermission[] = [
     userId: '5',
     userName: 'Anetth',
     userEmail: 'anetth@example.com',
+    userRole: 'COORDINADOR',
     canDeleteRecord: false, // No puede eliminar registros
     fieldPermissions: {
       // Para eventos/bodas - solo lectura de campos básicos
@@ -172,6 +180,7 @@ export const USER_SPECIFIC_PERMISSIONS: UserFieldPermission[] = [
     userId: '6',
     userName: 'Andrea',
     userEmail: 'andrea@example.com',
+    userRole: 'COORDINADOR',
     canDeleteRecord: false, // No puede eliminar registros
     fieldPermissions: {
       // Para eventos/bodas - solo lectura de campos básicos
@@ -194,6 +203,7 @@ export const USER_SPECIFIC_PERMISSIONS: UserFieldPermission[] = [
     userId: '7',
     userName: 'Hugo',
     userEmail: 'hugo@example.com',
+    userRole: 'COORDINADOR',
     canDeleteRecord: false, // No puede eliminar registros
     fieldPermissions: {
       // Para eventos/bodas - solo lectura de campos básicos
@@ -300,12 +310,14 @@ export function updateUserDeletePermission(
 export function addUserToPermissions(
   userId: string,
   userName: string,
-  userEmail: string
+  userEmail: string,
+  userRole: UserRole = 'COLABORADOR'
 ): UserFieldPermission {
   const newUserPermission: UserFieldPermission = {
     userId,
     userName,
     userEmail,
+    userRole,
     canDeleteRecord: false,
     fieldPermissions: {}
   };

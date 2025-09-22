@@ -23,7 +23,7 @@ import {
 } from 'lucide-react'
 
 import { Client, ClientStatus, ClientPriority, ClientType, ClientArea, ClientChannel, ClientExecutive, ClientCoordinator } from '@/types'
-import { formatDate } from '@/lib/utils'
+import { formatDate, formatPhoneNumber } from '@/lib/utils'
 import { CalendarPicker } from '@/components/ui/calendar-picker'
 import { Z_INDEX_LAYERS, getZIndexClass } from '@/lib/z-index-layers'
 import {
@@ -458,7 +458,7 @@ export function ClientCard({
         }}
         className={`cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded px-1 transition-colors block break-words ${className}`}
       >
-        {value || placeholder}
+        {fieldName === 'phone' && value ? formatPhoneNumber(value) : (value || placeholder)}
       </span>
     )
   }
@@ -884,71 +884,7 @@ export function ClientCard({
           document.body
         )}
         
-        {/* Dropdown para Area */}
-        {showDropdown === 'area' && createPortal(
-          <>
-            <div 
-              className={`fixed inset-0 ${getZIndexClass('DROPDOWN')}`}
-              onClick={() => setShowDropdown(null)}
-            />
-            <div 
-              className={`fixed w-40 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-lg ${getZIndexClass('DROPDOWN')} py-1`}
-              style={{
-                top: dropdownPosition.top,
-                left: dropdownPosition.left
-              }}
-            >
-              {areaOptions.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => handleDropdownChange('area', option.value)}
-                  onMouseDown={(e) => e.preventDefault()}
-                  className={`w-full px-3 py-2 text-left text-sm transition-colors ${
-                    client.area === option.value 
-                      ? "bg-blue-50 dark:bg-blue-900/30 border-l-2 border-blue-500 text-gray-900 dark:text-white" 
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </>,
-          document.body
-        )}
-        
-        {/* Dropdown para Executive */}
-        {showDropdown === 'assignedExecutive' && createPortal(
-          <>
-            <div 
-              className={`fixed inset-0 ${getZIndexClass('DROPDOWN')}`}
-              onClick={() => setShowDropdown(null)}
-            />
-            <div 
-              className={`fixed w-40 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-lg ${getZIndexClass('DROPDOWN')} py-1`}
-              style={{
-                top: dropdownPosition.top,
-                left: dropdownPosition.left
-              }}
-            >
-              {executiveOptions.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => handleDropdownChange('assignedExecutive', option.value)}
-                  onMouseDown={(e) => e.preventDefault()}
-                  className={`w-full px-3 py-2 text-left text-sm transition-colors ${
-                    client.assignedExecutive === option.value 
-                      ? "bg-blue-50 dark:bg-blue-900/30 border-l-2 border-blue-500 text-gray-900 dark:text-white" 
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </>,
-          document.body
-        )}
+
 
         {/* Dropdown para Coordinator */}
         {showDropdown === 'coordinator' && createPortal(

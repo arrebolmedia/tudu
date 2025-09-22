@@ -59,7 +59,7 @@ export function AuthForm({ mode, onToggleMode }: AuthFormProps) {
         })
 
         if (result?.ok) {
-          router.push('/')
+          router.push('/crm')
         } else {
           setError('Email o contraseña incorrectos')
         }

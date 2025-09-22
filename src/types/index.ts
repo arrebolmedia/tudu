@@ -3,23 +3,50 @@
 export type Priority = 'LOW' | 'NORMAL' | 'HIGH'
 export type TaskStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED'
 
+// Sistema de Roles Centralizado
+export type UserRole = 'SUPER_ADMIN' | 'PROPIETARIO' | 'GERENTE' | 'VENDEDOR' | 'COORDINADOR' | 'CALL_CENTER' | 'COLABORADOR'
+
 // CRM Types
 export type ClientStatus = 'NUEVO_CONTACTO' | 'ASIGNADO' | 'RECORRIDO_PROGRAMADO' | 'CLIENTE_CONTACTADO' | 'CERRADO_VENTA' | 'CERRADO_SIN_EXITO'
 export type ClientPriority = 'LOW' | 'NORMAL' | 'HIGH'
 export type ClientType = 'WEDDING' | 'QUINCEANOS' | 'BAUTIZO' | 'COMUNION' | 'CORPORATE' | 'SOCIAL' | 'OTHER'
 export type ClientArea = 'CASANUEVA' | 'CASA_MUNECAS' | 'ATRIO' | 'CABANAS'
 export type ClientChannel = 'INSTAGRAM' | 'FACEBOOK' | 'WHATSAPP_SOCIAL' | 'EMAIL' | 'PHONE' | 'WALKING' | 'REFERRAL' | 'RECURRENT' | 'BODAS_COM' | 'HACIENDAS_BODAS_COM'
-export type ClientExecutive = 'YARLENY_COLIN' | 'JOSEFO_FLORES' | 'SEBASTIAN_RAMIREZ'
-export type ClientCoordinator = 'BRENDA' | 'ANETTH' | 'ANDREA' | 'HUGO'
+
+// Tipos dinámicos que se generan desde usuarios
+export type ClientExecutive = string // Se generará dinámicamente desde usuarios con rol VENDEDOR
+export type ClientCoordinator = string // Se generará dinámicamente desde usuarios con rol COORDINADOR
 export type AssignedExecutive = 'MARIA_LOPEZ' | 'CARLOS_GARCIA' | 'ANA_MARTINEZ' | 'JUAN_RODRIGUEZ' | 'SOFIA_FERNANDEZ'
 
 export interface User {
   id: string
   email: string
   name: string
+  role: UserRole // Rol del usuario en el sistema
+  avatar?: string
+  isActive: boolean // Estado activo/inactivo
+  createdAt: Date
+  updatedAt: Date
+}
+
+// Interface para usuarios del sistema centralizado
+export interface SystemUser {
+  id: string
+  email: string
+  name: string
+  role: UserRole
+  isActive: boolean
   avatar?: string
   createdAt: Date
   updatedAt: Date
+}
+
+// Interface para opciones de dropdowns dinámicas
+export interface DropdownOption {
+  value: string
+  label: string
+  userId: string
+  role: UserRole
 }
 
 export interface List {

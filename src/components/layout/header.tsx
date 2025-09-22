@@ -17,6 +17,10 @@ export function Header() {
     router.push('/profile')
   }
 
+  const handleSettingsClick = () => {
+    router.push('/settings')
+  }
+
   console.log('Header render - Status:', status, 'Session:', !!session)
 
   return (
@@ -54,7 +58,10 @@ export function Header() {
                           <span>Mi Perfil</span>
                         </button>
                         
-                        <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-arrebol-beige-100 dark:hover:bg-gray-800 transition-colors duration-200 text-sm">
+                        <button
+                          onClick={handleSettingsClick}
+                          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-arrebol-beige-100 dark:hover:bg-gray-800 transition-colors duration-200 text-sm"
+                        >
                           <Settings className="w-4 h-4 text-arrebol-terracota-500" />
                           <span>Configuración</span>
                         </button>

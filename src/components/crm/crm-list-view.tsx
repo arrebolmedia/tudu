@@ -38,7 +38,7 @@ import {
 } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { cn, isToday, isTomorrow, isOverdue } from '@/lib/utils'
+import { cn, isToday, isTomorrow, isOverdue, formatPhoneNumber } from '@/lib/utils'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { CalendarPicker } from '@/components/ui/calendar-picker'
@@ -959,7 +959,7 @@ export function CrmListView({
 										>
 											{client.name !== '+ Agregar cliente...' && <Phone size={12} className="flex-shrink-0 text-gray-400" />}
 											<span className="text-sm text-gray-600 dark:text-gray-400 truncate flex-1">
-												{client.name === '+ Agregar cliente...' ? '' : (client.phone || 'Sin teléfono')}
+												{client.name === '+ Agregar cliente...' ? '' : (formatPhoneNumber(client.phone || '') || 'Sin teléfono')}
 											</span>
 											{client.name !== '+ Agregar cliente...' && <Edit3 size={12} className="opacity-0 group-hover:opacity-50 flex-shrink-0" />}
 										</button>
