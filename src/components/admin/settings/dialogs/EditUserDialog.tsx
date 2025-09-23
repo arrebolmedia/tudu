@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { X, Save, User, Mail, Shield } from 'lucide-react';
+import { ROLE_LABELS } from '@/lib/user-management';
+import { UserRole } from '@/types';
 
 interface EditUserDialogProps {
   user: {
@@ -28,7 +30,7 @@ export function EditUserDialog({ user, open, onClose, onSave }: EditUserDialogPr
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    role: 'user',
+    role: 'COLABORADOR',
     status: 'active',
     emailVerified: false
   });
@@ -38,7 +40,7 @@ export function EditUserDialog({ user, open, onClose, onSave }: EditUserDialogPr
       setFormData({
         name: user.name || '',
         email: user.email || '',
-        role: user.role || 'user',
+        role: user.role || 'COLABORADOR',
         status: user.status || 'active',
         emailVerified: user.emailVerified || false
       });
@@ -51,13 +53,9 @@ export function EditUserDialog({ user, open, onClose, onSave }: EditUserDialogPr
     try {
       setIsLoading(true);
       
-      // Aquí iría la llamada a la API para guardar los cambios
+      // Llamar a la función onSave que viene del componente padre
       console.log('Guardando cambios:', formData);
-      
-      // Simular delay de API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      onSave({ ...formData, id: user.id });
+      await onSave({ ...formData, id: user.id });
       onClose();
     } catch (error) {
       console.error('Error al guardar usuario:', error);
@@ -123,29 +121,53 @@ export function EditUserDialog({ user, open, onClose, onSave }: EditUserDialogPr
                   value={formData.role}
                   onValueChange={(value) => handleInputChange('role', value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-white border-gray-300">
                     <div className="flex items-center gap-2">
                       <Shield className="h-4 w-4" />
                       <SelectValue placeholder="Seleccionar rol" />
                     </div>
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                    <SelectItem value="SUPER_ADMIN">
                       <div className="flex flex-col">
-                        <span className="font-medium">Administrador</span>
-                        <span className="text-xs text-muted-foreground">Acceso completo</span>
+                        <span className="font-medium">{ROLE_LABELS.SUPER_ADMIN}</span>
+                        <span className="text-xs text-muted-foreground">Acceso total al sistema</span>
                       </div>
                     </SelectItem>
-                    <SelectItem value="user">
+                    <SelectItem value="PROPIETARIO">
                       <div className="flex flex-col">
-                        <span className="font-medium">Usuario</span>
-                        <span className="text-xs text-muted-foreground">Acceso estándar</span>
+                        <span className="font-medium">{ROLE_LABELS.PROPIETARIO}</span>
+                        <span className="text-xs text-muted-foreground">Control completo del negocio</span>
                       </div>
                     </SelectItem>
-                    <SelectItem value="guest">
+                    <SelectItem value="GERENTE">
                       <div className="flex flex-col">
-                        <span className="font-medium">Invitado</span>
-                        <span className="text-xs text-muted-foreground">Acceso limitado</span>
+                        <span className="font-medium">{ROLE_LABELS.GERENTE}</span>
+                        <span className="text-xs text-muted-foreground">Gestión de equipos y procesos</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="CALL_CENTER">
+                      <div className="flex flex-col">
+                        <span className="font-medium">{ROLE_LABELS.CALL_CENTER}</span>
+                        <span className="text-xs text-muted-foreground">Atención telefónica y soporte</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="VENDEDOR">
+                      <div className="flex flex-col">
+                        <span className="font-medium">{ROLE_LABELS.VENDEDOR}</span>
+                        <span className="text-xs text-muted-foreground">Gestión de clientes y ventas</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="COORDINADOR">
+                      <div className="flex flex-col">
+                        <span className="font-medium">{ROLE_LABELS.COORDINADOR}</span>
+                        <span className="text-xs text-muted-foreground">Coordinación de eventos</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="COLABORADOR">
+                      <div className="flex flex-col">
+                        <span className="font-medium">{ROLE_LABELS.COLABORADOR}</span>
+                        <span className="text-xs text-muted-foreground">Acceso básico y limitado</span>
                       </div>
                     </SelectItem>
                   </SelectContent>

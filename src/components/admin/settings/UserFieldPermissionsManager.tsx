@@ -31,7 +31,24 @@ import {
   ROLE_COLORS
 } from '@/lib/user-management';
 import { syncUserData, generatePermissionsFromSystemUsers } from '@/lib/data-sync';
+import { 
+  getRoleConfig, 
+  getRoleFieldPermission, 
+  canRoleDelete,
+  applyDefaultRolePermissions
+} from '@/lib/role-permissions-config';
 import { UserRole } from '@/types';
+
+// Etiquetas de roles sin iconos para dropdowns limpios
+const ROLE_LABELS_CLEAN: Record<UserRole, string> = {
+  'SUPER_ADMIN': 'Super Administrador',
+  'PROPIETARIO': 'Propietario', 
+  'GERENTE': 'Gerente',
+  'VENDEDOR': 'Vendedor',
+  'COORDINADOR': 'Coordinador',
+  'CALL_CENTER': 'Call Center',
+  'COLABORADOR': 'Colaborador'
+};
 
 const ACTION_ICONS = {
   view: Eye,
@@ -57,18 +74,38 @@ export function UserFieldPermissionsManager() {
   const [hasChanges, setHasChanges] = useState(false);
   const [showAddUser, setShowAddUser] = useState(false);
   const [newUser, setNewUser] = useState({ name: '', email: '', role: 'COLABORADOR' as UserRole });
+  const [forceRender, setForceRender] = useState(0); // Para forzar re-renders
 
   // Ejecutar sincronización al montar el componente
   useEffect(() => {
     console.log('🔄 Inicializando sistema de permisos...')
     
-    // Generar permisos desde usuarios reales del sistema
-    const systemBasedPermissions = generatePermissionsFromSystemUsers()
-    setUserPermissions(systemBasedPermissions)
+    // Intentar cargar datos guardados primero
+    const savedPermissions = localStorage.getItem('userFieldPermissions');
     
-    const syncResult = syncUserData()
-    console.log('📊 Resultado de sincronización:', syncResult)
-    console.log('👥 Usuarios cargados:', systemBasedPermissions.map(u => `${u.userName} (${u.userRole})`))
+    if (savedPermissions) {
+      try {
+        const parsedPermissions = JSON.parse(savedPermissions);
+        console.log('📥 Cargando permisos guardados desde localStorage:', parsedPermissions);
+        setUserPermissions(parsedPermissions);
+        console.log('✅ Datos cargados exitosamente desde localStorage');
+        return; // ¡IMPORTANTE! No ejecutar sincronización si hay datos guardados
+      } catch (error) {
+        console.error('❌ Error cargando permisos guardados:', error);
+      }
+    }
+    
+    // Solo generar desde sistema si NO hay datos guardados
+    console.log('📊 No hay datos guardados, generando desde usuarios del sistema...');
+    const systemBasedPermissions = generatePermissionsFromSystemUsers();
+    setUserPermissions(systemBasedPermissions);
+    
+    // Guardar los datos generados
+    localStorage.setItem('userFieldPermissions', JSON.stringify(systemBasedPermissions));
+    console.log('💾 Datos del sistema guardados en localStorage');
+    
+    const syncResult = syncUserData();
+    console.log('📊 Resultado de sincronización:', syncResult);
   }, [])
 
   // Filtrar usuarios por búsqueda
@@ -89,58 +126,115 @@ export function UserFieldPermissionsManager() {
     action: PermissionAction,
     hasPermission: boolean
   ) => {
-    const updated = updateUserFieldPermission(userId, fieldId, action, hasPermission);
-    setUserPermissions(updated);
+    console.log(`🔧 Actualizando permiso ${action} para campo ${fieldId} del usuario ${userId}: ${hasPermission}`);
+    
+    setUserPermissions(prev => {
+      const updated = prev.map(user => {
+        if (user.userId === userId) {
+          const newFieldPermissions = { ...user.fieldPermissions };
+          
+          if (!newFieldPermissions[fieldId]) {
+            newFieldPermissions[fieldId] = { view: false, edit: false };
+          }
+          
+          newFieldPermissions[fieldId] = {
+            ...newFieldPermissions[fieldId],
+            [action]: hasPermission
+          };
+          
+          return { ...user, fieldPermissions: newFieldPermissions };
+        }
+        return user;
+      });
+      
+      // Guardar automáticamente en localStorage
+      localStorage.setItem('userFieldPermissions', JSON.stringify(updated));
+      console.log(`💾 Permiso actualizado y guardado en localStorage`);
+      
+      return updated;
+    });
+    
     setHasChanges(true);
   };
 
   // Actualizar permiso de eliminar registro completo
   const updateDeletePermission = (userId: string, canDelete: boolean) => {
-    const updated = updateUserDeletePermission(userId, canDelete);
-    setUserPermissions(updated);
+    console.log(`🗑️ Actualizando permiso de eliminar para usuario ${userId}: ${canDelete}`);
+    
+    setUserPermissions(prev => {
+      const updated = prev.map(user => 
+        user.userId === userId 
+          ? { ...user, canDeleteRecord: canDelete }
+          : user
+      );
+      
+      // Guardar automáticamente en localStorage
+      localStorage.setItem('userFieldPermissions', JSON.stringify(updated));
+      console.log(`💾 Permiso de eliminar actualizado y guardado en localStorage`);
+      
+      return updated;
+    });
+    
     setHasChanges(true);
   };
 
   // Actualizar rol de usuario
   const updateUserRole = (userId: string, newRole: UserRole) => {
-    setUserPermissions(prev => 
-      prev.map(user => 
+    console.log(`🔄 Actualizando rol de usuario ${userId} a ${newRole}`);
+    
+    setUserPermissions(prev => {
+      const updated = prev.map(user => 
         user.userId === userId 
-          ? { ...user, userRole: newRole }
+          ? { ...user, userRole: newRole, lastUpdated: Date.now() } // Agregar timestamp para forzar re-render
           : user
-      )
-    );
+      );
+      
+      // Log para verificar que el cambio se aplicó
+      const updatedUser = updated.find(u => u.userId === userId);
+      console.log(`✅ Usuario actualizado:`, updatedUser);
+      console.log(`🏷️ Nueva etiqueta debería ser: ${ROLE_LABELS_CLEAN[newRole]}`);
+      
+      // Guardar automáticamente en localStorage
+      localStorage.setItem('userFieldPermissions', JSON.stringify(updated));
+      console.log(`💾 Cambio de rol guardado automáticamente en localStorage`);
+      
+      return updated;
+    });
+    
     setHasChanges(true);
     
-    // Opcional: Aplicar permisos predeterminados según el rol
-    applyDefaultPermissionsForRole(userId, newRole);
+    // Forzar re-render inmediato
+    setForceRender(prev => prev + 1);
+    console.log(`🔄 Forzando re-render del componente`);
+    
+    // NO aplicar permisos automáticamente para evitar sobrescritura
+    // Los permisos se pueden aplicar manualmente con el botón
+    console.log(`⏸️ Rol actualizado sin aplicar permisos predeterminados automáticamente`);
   };
 
   // Aplicar permisos predeterminados según el rol
   const applyDefaultPermissionsForRole = (userId: string, role: UserRole) => {
     const fields = getCurrentFields();
+    const roleConfig = getRoleConfig(role);
     
-    // Definir permisos por rol
-    const rolePermissions = {
-      'SUPER_ADMIN': { view: true, edit: true, canDelete: true },
-      'PROPIETARIO': { view: true, edit: true, canDelete: true },
-      'GERENTE': { view: true, edit: true, canDelete: true },
-      'CALL_CENTER': { view: true, edit: true, canDelete: true },
-      'VENDEDOR': { view: true, edit: true, canDelete: false },
-      'COORDINADOR': { view: true, edit: true, canDelete: false },
-      'COLABORADOR': { view: true, edit: false, canDelete: false }
-    };
+    if (!roleConfig) {
+      console.warn(`No se encontró configuración para el rol: ${role}`);
+      return;
+    }
 
-    const permissions = rolePermissions[role];
-    
-    // Aplicar permisos a todos los campos
+    // Aplicar permisos específicos del rol a cada campo
     fields.forEach(field => {
-      updatePermission(userId, field.fieldId, 'view', permissions.view);
-      updatePermission(userId, field.fieldId, 'edit', permissions.edit);
+      const fieldPermission = roleConfig.permissions[field.fieldId];
+      if (fieldPermission) {
+        updatePermission(userId, field.fieldId, 'view', fieldPermission.view);
+        updatePermission(userId, field.fieldId, 'edit', fieldPermission.edit);
+      }
     });
     
     // Aplicar permiso de eliminar
-    updateDeletePermission(userId, permissions.canDelete);
+    updateDeletePermission(userId, roleConfig.canDelete);
+    
+    console.log(`✅ Aplicados permisos predeterminados del rol ${role} para usuario ${userId}`);
   };
 
   // Agregar nuevo usuario
@@ -160,9 +254,20 @@ export function UserFieldPermissionsManager() {
   const saveChanges = async () => {
     try {
       console.log('💾 Guardando permisos de usuarios:', userPermissions);
-      // Aquí iría la llamada a la API para guardar
+      
+      // Guardar en localStorage como persistencia temporal
+      localStorage.setItem('userFieldPermissions', JSON.stringify(userPermissions));
+      
+      // TODO: Aquí iría la llamada a la API para guardar en base de datos
+      // await fetch('/api/admin/user-permissions', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(userPermissions)
+      // });
+      
       setHasChanges(false);
       alert('Permisos guardados correctamente');
+      console.log('✅ Permisos guardados en localStorage');
     } catch (error) {
       console.error('Error guardando permisos:', error);
       alert('Error al guardar permisos');
@@ -246,17 +351,17 @@ export function UserFieldPermissionsManager() {
               <div>
                 <Label htmlFor="newUserRole">Rol del Usuario</Label>
                 <Select value={newUser.role} onValueChange={(value: UserRole) => setNewUser(prev => ({ ...prev, role: value }))}>
-                  <SelectTrigger id="newUserRole">
+                  <SelectTrigger id="newUserRole" className="bg-white border-gray-300">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="SUPER_ADMIN">🔧 {ROLE_LABELS.SUPER_ADMIN}</SelectItem>
-                    <SelectItem value="PROPIETARIO">👑 {ROLE_LABELS.PROPIETARIO}</SelectItem>
-                    <SelectItem value="GERENTE">📋 {ROLE_LABELS.GERENTE}</SelectItem>
-                    <SelectItem value="CALL_CENTER">📞 {ROLE_LABELS.CALL_CENTER}</SelectItem>
-                    <SelectItem value="VENDEDOR">💼 {ROLE_LABELS.VENDEDOR}</SelectItem>
-                    <SelectItem value="COORDINADOR">📅 {ROLE_LABELS.COORDINADOR}</SelectItem>
-                    <SelectItem value="COLABORADOR">👤 {ROLE_LABELS.COLABORADOR}</SelectItem>
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                    <SelectItem value="SUPER_ADMIN">{ROLE_LABELS_CLEAN.SUPER_ADMIN}</SelectItem>
+                    <SelectItem value="PROPIETARIO">{ROLE_LABELS_CLEAN.PROPIETARIO}</SelectItem>
+                    <SelectItem value="GERENTE">{ROLE_LABELS_CLEAN.GERENTE}</SelectItem>
+                    <SelectItem value="CALL_CENTER">{ROLE_LABELS_CLEAN.CALL_CENTER}</SelectItem>
+                    <SelectItem value="VENDEDOR">{ROLE_LABELS_CLEAN.VENDEDOR}</SelectItem>
+                    <SelectItem value="COORDINADOR">{ROLE_LABELS_CLEAN.COORDINADOR}</SelectItem>
+                    <SelectItem value="COLABORADOR">{ROLE_LABELS_CLEAN.COLABORADOR}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -306,7 +411,7 @@ export function UserFieldPermissionsManager() {
           
           return (
             <Card 
-              key={user.userId}
+              key={`${user.userId}-${user.userRole}-${(user as any).lastUpdated || 0}-${forceRender}`}
               className={`cursor-pointer transition-all ${
                 isSelected ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:shadow-md'
               }`}
@@ -322,7 +427,7 @@ export function UserFieldPermissionsManager() {
                       className={`text-xs px-1.5 py-0 mt-1 ${ROLE_COLORS[user.userRole] || 'bg-gray-100'}`}
                     >
                       <Shield className="h-2.5 w-2.5 mr-1" />
-                      {ROLE_LABELS[user.userRole]}
+                      {ROLE_LABELS_CLEAN[user.userRole]}
                     </Badge>
                   </div>
                   <User className="h-3 w-3 text-muted-foreground" />
@@ -408,52 +513,17 @@ export function UserFieldPermissionsManager() {
                       value={userPermissions.find(u => u.userId === selectedUser)?.userRole || 'COLABORADOR'} 
                       onValueChange={(value: UserRole) => updateUserRole(selectedUser, value)}
                     >
-                      <SelectTrigger className="w-48">
+                      <SelectTrigger className="w-48 bg-white border-gray-300">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="SUPER_ADMIN">
-                          <div className="flex items-center gap-2">
-                            <span>🔧</span>
-                            <span>{ROLE_LABELS.SUPER_ADMIN}</span>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="PROPIETARIO">
-                          <div className="flex items-center gap-2">
-                            <span>👑</span>
-                            <span>{ROLE_LABELS.PROPIETARIO}</span>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="GERENTE">
-                          <div className="flex items-center gap-2">
-                            <span>📋</span>
-                            <span>{ROLE_LABELS.GERENTE}</span>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="CALL_CENTER">
-                          <div className="flex items-center gap-2">
-                            <span>📞</span>
-                            <span>{ROLE_LABELS.CALL_CENTER}</span>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="VENDEDOR">
-                          <div className="flex items-center gap-2">
-                            <span>💼</span>
-                            <span>{ROLE_LABELS.VENDEDOR}</span>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="COORDINADOR">
-                          <div className="flex items-center gap-2">
-                            <span>📅</span>
-                            <span>{ROLE_LABELS.COORDINADOR}</span>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="COLABORADOR">
-                          <div className="flex items-center gap-2">
-                            <span>👤</span>
-                            <span>{ROLE_LABELS.COLABORADOR}</span>
-                          </div>
-                        </SelectItem>
+                      <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                        <SelectItem value="SUPER_ADMIN">{ROLE_LABELS_CLEAN.SUPER_ADMIN}</SelectItem>
+                        <SelectItem value="PROPIETARIO">{ROLE_LABELS_CLEAN.PROPIETARIO}</SelectItem>
+                        <SelectItem value="GERENTE">{ROLE_LABELS_CLEAN.GERENTE}</SelectItem>
+                        <SelectItem value="CALL_CENTER">{ROLE_LABELS_CLEAN.CALL_CENTER}</SelectItem>
+                        <SelectItem value="VENDEDOR">{ROLE_LABELS_CLEAN.VENDEDOR}</SelectItem>
+                        <SelectItem value="COORDINADOR">{ROLE_LABELS_CLEAN.COORDINADOR}</SelectItem>
+                        <SelectItem value="COLABORADOR">{ROLE_LABELS_CLEAN.COLABORADOR}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -468,6 +538,8 @@ export function UserFieldPermissionsManager() {
                       const currentUser = userPermissions.find(u => u.userId === selectedUser);
                       if (currentUser) {
                         applyDefaultPermissionsForRole(selectedUser, currentUser.userRole);
+                        // Mostrar confirmación
+                        console.log(`✅ Permisos predeterminados aplicados para rol: ${currentUser.userRole}`);
                       }
                     }}
                     className="text-xs"

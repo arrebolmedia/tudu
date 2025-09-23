@@ -29,6 +29,8 @@ import { Switch } from '@/components/ui/switch';
 import { useSettings } from '@/components/admin/settings/SettingsProvider';
 import { useAdminSecurity } from '@/components/admin/security/AdminSecurityProvider';
 import { type AdminUser, type PatchUserDto } from '@/types/admin';
+import { ROLE_LABELS } from '@/lib/user-management';
+import { UserRole } from '@/types';
 
 interface EditUserDialogProps {
   open: boolean;
@@ -197,17 +199,17 @@ export function EditUserDialog({ open, onOpenChange, user }: EditUserDialogProps
               onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}
               disabled={isLoading}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-white border-gray-300">
                 <SelectValue placeholder="Selecciona un rol" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="SuperAdmin">SuperAdmin</SelectItem>
-                <SelectItem value="Propietario">Propietario</SelectItem>
-                <SelectItem value="Gestor">Gestor</SelectItem>
-                <SelectItem value="Vendedor">Vendedor</SelectItem>
-                <SelectItem value="GerenteBanquetes">Gerente Banquetes</SelectItem>
-                <SelectItem value="Coordinador">Coordinador</SelectItem>
-                <SelectItem value="Planner">Planner</SelectItem>
+              <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                <SelectItem value="SUPER_ADMIN">{ROLE_LABELS.SUPER_ADMIN}</SelectItem>
+                <SelectItem value="PROPIETARIO">{ROLE_LABELS.PROPIETARIO}</SelectItem>
+                <SelectItem value="GERENTE">{ROLE_LABELS.GERENTE}</SelectItem>
+                <SelectItem value="CALL_CENTER">{ROLE_LABELS.CALL_CENTER}</SelectItem>
+                <SelectItem value="VENDEDOR">{ROLE_LABELS.VENDEDOR}</SelectItem>
+                <SelectItem value="COORDINADOR">{ROLE_LABELS.COORDINADOR}</SelectItem>
+                <SelectItem value="COLABORADOR">{ROLE_LABELS.COLABORADOR}</SelectItem>
               </SelectContent>
             </Select>
           </div>

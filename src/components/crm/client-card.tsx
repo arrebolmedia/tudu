@@ -30,7 +30,7 @@ import {
   getStatusColor, getStatusLabel, getPriorityColor, getPriorityLabel, 
   getAreaColor, getAreaLabel, getTypeColor, getTypeLabel, getChannelColor, getChannelLabel,
   getExecutiveLabel, getExecutiveColor, getCoordinatorLabel, getCoordinatorColor,
-  statusOptions, priorityOptions, areaOptions, typeOptions, channelOptions, executiveOptions, coordinatorOptions
+  statusOptions, priorityOptions, areaOptions, typeOptions, channelOptions, getExecutiveOptions, getCoordinatorOptions
 } from '@/lib/client-utils'
 import { useActivityLog } from '@/contexts/activity-log-context'
 
@@ -51,6 +51,10 @@ export function ClientCard({
   onOpenModal,
   disableLogging = false
 }: ClientCardProps) {
+  // Generar opciones dinámicamente cada vez que se renderiza
+  const executiveOptions = getExecutiveOptions()
+  const coordinatorOptions = getCoordinatorOptions()
+  
   const [showMenu, setShowMenu] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [editingField, setEditingField] = useState<string | null>(null)
@@ -414,12 +418,6 @@ export function ClientCard({
   }
 
   const PriorityIcon = getPriorityIcon(client.priority)
-
-  const executiveOptions: { value: ClientExecutive; label: string }[] = [
-    { value: 'YARLENY_COLIN', label: 'Yarleny Colín' },
-    { value: 'JOSEFO_FLORES', label: 'Josefo Flores' },
-    { value: 'SEBASTIAN_RAMIREZ', label: 'Sebastián Ramírez' },
-  ]
 
   const renderEditableField = (
     fieldName: string,

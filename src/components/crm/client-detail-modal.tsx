@@ -11,6 +11,7 @@ import { Client, ClientStatus, ClientPriority, ClientType, ClientArea, ClientCha
 import { useActivityLog } from '@/contexts/activity-log-context'
 import { useComments } from '@/contexts/comments-context'
 import { formatPhoneNumber } from '@/lib/utils'
+import { generateExecutiveOptions, generateCoordinatorOptions } from '@/lib/user-management'
 
 interface ClientDetailModalProps {
   client: Client
@@ -206,18 +207,9 @@ export function ClientDetailModal({ client, isOpen, onClose, onUpdate }: ClientD
     { value: 'HACIENDAS_BODAS_COM' as ClientChannel, label: 'Haciendas Bodas.com' }
   ]
 
-  const executiveOptions = [
-    { value: 'YARLENY_COLIN' as ClientExecutive, label: 'Yarleny Colin' },
-    { value: 'JOSEFO_FLORES' as ClientExecutive, label: 'Josefo Flores' },
-    { value: 'SEBASTIAN_RAMIREZ' as ClientExecutive, label: 'Sebastián Ramírez' }
-  ]
-
-  const coordinatorOptions = [
-    { value: 'BRENDA' as ClientCoordinator, label: 'Brenda' },
-    { value: 'ANETTH' as ClientCoordinator, label: 'Anetth' },
-    { value: 'ANDREA' as ClientCoordinator, label: 'Andrea' },
-    { value: 'HUGO' as ClientCoordinator, label: 'Hugo' }
-  ]
+  // Generar opciones dinámicamente desde el sistema de usuarios
+  const executiveOptions = generateExecutiveOptions()
+  const coordinatorOptions = generateCoordinatorOptions()
 
   // Funciones para obtener estilos de badges (actualizadas con tipos correctos)
   const getStatusColor = (status: ClientStatus) => {

@@ -257,6 +257,12 @@ export const channelOptions: { value: ClientChannel; label: string }[] = [
 ]
 
 // Dynamic options arrays from user management system
+// Funciones para generar opciones dinámicamente (se ejecutan cada vez que se llaman)
+export const getExecutiveOptions = () => generateExecutiveOptions()
+export const getCoordinatorOptions = () => generateCoordinatorOptions()
+
+// Para compatibilidad con código existente, mantener las exportaciones estáticas
+// pero que se actualicen dinámicamente
 export const executiveOptions = generateExecutiveOptions()
 export const coordinatorOptions = generateCoordinatorOptions()
 

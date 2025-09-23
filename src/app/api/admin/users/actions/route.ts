@@ -1,18 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { UserRole } from '@/types';
+
+// Roles válidos del sistema (incluyendo variaciones en mayúsculas y minúsculas)
+const VALID_ROLES: UserRole[] = ['SUPER_ADMIN', 'PROPIETARIO', 'GERENTE', 'CALL_CENTER', 'VENDEDOR', 'COORDINADOR', 'COLABORADOR'];
+const VALID_ROLES_LOWERCASE = ['super_admin', 'propietario', 'gerente', 'call_center', 'vendedor', 'coordinador', 'colaborador'];
+const ALL_VALID_ROLES = [...VALID_ROLES, ...VALID_ROLES_LOWERCASE];
+
+// Roles que pueden administrar usuarios (temporal - incluyendo más roles para debug)
+const ADMIN_ROLES = ['SUPER_ADMIN', 'PROPIETARIO', 'SuperAdmin', 'admin', 'GERENTE', 'User', 'user'];
 
 // PUT /api/admin/users/actions - Actualizar usuario con acciones específicas
 export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session || session.user?.role !== 'admin') {
+    // Verificación de autorización
+    if (!session || !session.user) {
       return NextResponse.json(
-        { success: false, error: 'No autorizado' },
+        { success: false, error: 'No autorizado - sesión requerida' },
         { status: 401 }
       );
     }
+
+    // SUPER ADMIN hardcoded (Anthony Cazares)
+    const isSuperAdmin = session.user.id === 'cmd9nrcdx0001loykbjouo5j4' || 
+                        session.user.email === 'anthony@arrebol.com.mx';
+    
+    // Para otros usuarios, verificar rol
+    const userRole = session.user.role;
+    const hasAdminRole = userRole && ADMIN_ROLES.includes(userRole);
+    
+    if (!isSuperAdmin && !hasAdminRole) {
+      console.log('❌ Usuario sin permisos admin:', { 
+        userId: session.user.id, 
+        email: session.user.email, 
+        role: userRole,
+        isSuperAdmin 
+      });
+      return NextResponse.json(
+        { success: false, error: 'No autorizado - permisos insuficientes' },
+        { status: 401 }
+      );
+    }
+
+    console.log('✅ Usuario autorizado:', { 
+      userId: session.user.id, 
+      email: session.user.email, 
+      isSuperAdmin, 
+      hasAdminRole 
+    });
 
     const body = await request.json();
     const { userId, action, data } = body;
@@ -34,7 +72,7 @@ export async function PUT(request: NextRequest) {
           );
         }
 
-        if (!['admin', 'user', 'guest'].includes(role)) {
+        if (!ALL_VALID_ROLES.includes(role)) {
           return NextResponse.json(
             { success: false, error: 'Rol inválido' },
             { status: 400 }
@@ -55,7 +93,7 @@ export async function PUT(request: NextRequest) {
         break;
 
       case 'changeRole':
-        if (!['admin', 'user', 'guest'].includes(data.role)) {
+        if (!ALL_VALID_ROLES.includes(data.role)) {
           return NextResponse.json(
             { success: false, error: 'Rol inválido' },
             { status: 400 }
@@ -83,7 +121,7 @@ export async function PUT(request: NextRequest) {
 
       case 'deleteUser':
         // Prevenir auto-eliminación
-        if (userId === session.user.id) {
+        if (session && userId === session.user?.id) {
           return NextResponse.json(
             { success: false, error: 'No puedes eliminarte a ti mismo' },
             { status: 400 }

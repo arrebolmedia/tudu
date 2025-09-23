@@ -7,6 +7,7 @@ import { Client, ClientArea, ClientExecutive } from '@/types'
 import { cn } from '@/lib/utils'
 import { CalendarPicker } from '@/components/ui/calendar-picker'
 import { Z_INDEX_LAYERS, getZIndexClass } from '@/lib/z-index-layers'
+import { generateExecutiveOptions } from '@/lib/user-management'
 
 // Tipos específicos para el modal
 interface CreateClientData {
@@ -30,14 +31,10 @@ const areaOptions = [
   { value: 'CABANAS' as ClientArea, label: 'Cabañas' }
 ]
 
-// Opciones para ejecutivos - EXACTOS del sistema existente
-const executiveOptions = [
-  { value: 'YARLENY_COLIN', label: 'Yarleny Colín' },
-  { value: 'JOSEFO_FLORES', label: 'Josefo Flores' },
-  { value: 'SEBASTIAN_RAMIREZ', label: 'Sebastián Ramírez' }
-]
-
 export function CreateClientModal({ isOpen, onClose, onCreateClient }: CreateClientModalProps) {
+  // Generar opciones dinámicamente desde el sistema de usuarios
+  const executiveOptions = generateExecutiveOptions()
+  
   const [formData, setFormData] = useState<CreateClientData>({
     name: '',
     eventDate: undefined,

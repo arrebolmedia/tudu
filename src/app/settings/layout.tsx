@@ -1,5 +1,14 @@
 /**
- * Sconst settingsNavigation = [
+ * Sconst seconst settingsNavigation = [
+  { name: 'Users', href: '/settings/users', icon: '👥' },
+  { name: 'Roles', href: '/settings/roles', icon: '🛡️' },
+  { name: 'Role Permissions', href: '/settings/role-permissions', icon: '⚙️' },
+  { name: 'User Permissions', href: '/settings/field-permissions', icon: '🔐' },
+  { name: 'Policy', href: '/settings/policy', icon: '📝' },
+  { name: 'Versions', href: '/settings/versions', icon: '📚' },
+  { name: 'DryRun', href: '/settings/dryrun', icon: '🧪' },
+  { name: 'Audit', href: '/settings/audit', icon: '📊' }
+];igation = [
   { name: 'Users', href: '/settings/users', icon: '👥' },
   // { name: 'Roles', href: '/settings/roles', icon: '🛡️' },
   { name: 'User Permissions', href: '/settings/field-permissions', icon: '🔐' },

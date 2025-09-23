@@ -8,6 +8,15 @@ import { UserRole, SystemUser, DropdownOption } from '@/types'
 // Base de datos de usuarios del sistema (simulada)
 export const SYSTEM_USERS: SystemUser[] = [
   {
+    id: 'cmd9nrcdx0001loykbjouo5j4',
+    email: 'anthony@arrebol.com.mx',
+    name: 'Anthony Cazares',
+    role: 'SUPER_ADMIN',
+    isActive: true,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01')
+  },
+  {
     id: '1',
     email: 'yarleny.colin@arrebolweddings.com',
     name: 'Yarleny Colín',
@@ -134,9 +143,52 @@ export const getActiveCoordinators = (): SystemUser[] => {
   return getUsersByRole('COORDINADOR')
 }
 
-// Funciones para generar opciones de dropdown dinámicamente
+// Función para obtener usuarios adicionales del localStorage (agregados en gestión de permisos)
+const getUsersFromPermissions = (): SystemUser[] => {
+  if (typeof window === 'undefined') return [] // Para SSR
+  
+  try {
+    const savedPermissions = localStorage.getItem('userFieldPermissions')
+    if (!savedPermissions) return []
+    
+    const userPermissions = JSON.parse(savedPermissions)
+    
+    return userPermissions
+      .filter((perm: any) => perm.userId.startsWith('new-')) // Solo usuarios nuevos
+      .map((perm: any) => ({
+        id: perm.userId,
+        name: perm.userName,
+        email: perm.userEmail,
+        role: perm.userRole,
+        isActive: true,
+        phone: '',
+        position: '',
+        department: '',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      } as SystemUser))
+  } catch (error) {
+    console.error('Error leyendo usuarios de localStorage:', error)
+    return []
+  }
+}
+
+// Funciones que combinan usuarios del sistema + localStorage
+const getAllActiveExecutives = (): SystemUser[] => {
+  const systemExecutives = getActiveExecutives()
+  const localExecutives = getUsersFromPermissions().filter(user => user.role === 'VENDEDOR')
+  return [...systemExecutives, ...localExecutives]
+}
+
+const getAllActiveCoordinators = (): SystemUser[] => {
+  const systemCoordinators = getActiveCoordinators()
+  const localCoordinators = getUsersFromPermissions().filter(user => user.role === 'COORDINADOR')
+  return [...systemCoordinators, ...localCoordinators]
+}
+
+// Funciones para generar opciones de dropdown dinámicamente (ACTUALIZADAS)
 export const generateExecutiveOptions = (): DropdownOption[] => {
-  return getActiveExecutives().map(user => ({
+  return getAllActiveExecutives().map(user => ({
     value: user.id,
     label: user.name,
     userId: user.id,
@@ -145,7 +197,7 @@ export const generateExecutiveOptions = (): DropdownOption[] => {
 }
 
 export const generateCoordinatorOptions = (): DropdownOption[] => {
-  return getActiveCoordinators().map(user => ({
+  return getAllActiveCoordinators().map(user => ({
     value: user.id,
     label: user.name,
     userId: user.id,
